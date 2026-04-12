@@ -7,9 +7,16 @@ public class Main {
         Reservation reserve = new Reservation.ReservationBuilder().build();
         Repository repo = new Repository.RepositoryBuilder().setDatabasePath().build();
         
-        int choice = 0;
+        System.out.println("\n========================================");
+        System.out.println("#       TRAIN RESERVATION SYSTEM       #");
+        System.out.println("========================================");
         
-        while(choice != 1){
+        System.out.println("\n[1] Register" + "\n[2] Exit");
+        System.out.print("Enter your choice: ");
+        int choice = sc.nextInt();
+        
+        switch(choice){
+            case 1:  while(true){
             Passenger passenger = Passenger.fillUpRegistration();
             passenger = Passenger.checkStatus(passenger);
             Route route = Route.selectRoute();
@@ -21,7 +28,7 @@ public class Main {
             while (true) {
                 reserve.confirmReservation();
                 System.out.println("\nYour reservation details are provided above.");
-                System.out.println("\nEnter [1] to confirm reservation:");
+                System.out.println("\nEnter [1] confirm reservation");
                 System.out.println("[1] Confirm \n[0] Cancel");
                 System.out.print("Enter Choice: ");
                 
@@ -36,19 +43,26 @@ public class Main {
                     } else if (status == 0) {
                         boolean isCancelled = reserve.cancelReservation();
                         if (isCancelled) {
-                            break; //restart whole process
+                            break;
                         } else {
-                            continue; //back to summary
+                            continue; 
                         }
                     } else {
-                        System.out.println("\n*INVALID INPUT!* Please enter a valid option.");
+                        System.out.println("\nInvalid input. Please enter a valid option.");
                     }
                 } else {
-                    System.out.println("\n*INVALID INPUT!* Please enter a number only.");
+                    System.out.println("\nInvalid input. Please enter a number only.");
                     sc.next();
                 }
             } 
         }
+            case 0: 
+                System.out.println("You have successfully exit!");
+                break;
+            default:System.out.println("INVALID INPUT! Enter the valid option");
+        }
+        
+       
        sc.close();
     }
 }
