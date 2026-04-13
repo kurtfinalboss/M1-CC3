@@ -11,7 +11,7 @@ public class Main {
         System.out.println("#       TRAIN RESERVATION SYSTEM       #");
         System.out.println("========================================");
         
-        System.out.println("\n[1] Register" + "\n[2] Exit");
+        System.out.println("\n[1] Register" + "\n[0] Exit");
         System.out.print("Enter your choice: ");
         int choice = sc.nextInt();
         
