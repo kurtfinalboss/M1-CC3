@@ -21,12 +21,7 @@ public class Passenger {
     public String getEmailAddress(){return EMAIL_ADDRESS;}
 
     public static Passenger fillUpRegistration() {
-
         Scanner sc = new Scanner(System.in);
-        System.out.println("\n========================================");
-        System.out.println("#       TRAIN RESERVATION SYSTEM       #");
-        System.out.println("========================================");
-
         String name = "", contact = "", emailAddress = "";
 
         while (true) {
