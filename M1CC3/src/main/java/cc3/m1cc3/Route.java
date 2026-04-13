@@ -8,6 +8,12 @@ public class Route {
     private final String destinationStation;
     private final String departureTime;
 
+    private Route(){
+        this.departureTime = null;
+        this.destinationStation = null;
+        this.originStation = null;
+    }
+
     private Route(RouteBuilder builder) {
         this.originStation = builder.originStation;
         this.destinationStation = builder.destinationStation;
