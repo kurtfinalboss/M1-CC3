@@ -7,10 +7,14 @@ import java.sql.ResultSet;
 
 
 public class Repository {
-    private final String dbURL;
+    private final String DBURL;
+
+    private Repository(){
+        this.DBURL = null;
+    }
   
     private Repository(String dbURL){
-        this.dbURL = dbURL;
+        this.DBURL = dbURL;
     }
     
     public static String passengerExists(String name, String contact, String emailAddress){
@@ -65,7 +69,7 @@ public class Repository {
 
         String sql = "INSERT INTO tbl_train(fullname, contactNumber, emailAddress, PassengerCategory, discountRate, originStation, destinationStation, departureTime, reservationCode) VALUES (?,?, ?, ?, ?, ?, ?,?,?)";
 
-        try (Connection conn = DriverManager.getConnection(dbURL);
+        try (Connection conn = DriverManager.getConnection(DBURL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, reservation.getPassenger().getFullname());
