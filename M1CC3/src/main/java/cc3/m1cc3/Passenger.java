@@ -6,6 +6,14 @@ public class Passenger {
     private final String PASSENGER_CATEGORY, FULLNAME, CONTACT_NUMBER, EMAIL_ADDRESS;
     private final double DISCOUNT_RATE;
     
+    private Passenger(){
+         this.PASSENGER_CATEGORY = null;
+         this.DISCOUNT_RATE = 0.0;
+         this.FULLNAME = null;
+         this.CONTACT_NUMBER = null;
+         this.EMAIL_ADDRESS = null;
+    }
+    
     private Passenger(PassengerBuilder builder){
         this.PASSENGER_CATEGORY = builder.passengerCategory;
         this.DISCOUNT_RATE = builder.discountRate;
