@@ -7,6 +7,12 @@ public class Reservation {
     private final String RESERVATION_CODE;
     private final Passenger passenger;
     private final Route route;
+
+    private Reservation(){
+        this.RESERVATION_CODE = null;
+        this.passenger = null;
+        this.route = null;
+    }
     
     private Reservation(ReservationBuilder builder ){
         this.RESERVATION_CODE = generateReservationCode();
