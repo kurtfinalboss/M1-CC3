@@ -4,26 +4,26 @@ import java.util.Scanner;
 
 public class Route {
 
-    private final String originStation;
-    private final String destinationStation;
-    private final String departureTime;
-
+    private final String ORIGIN_STATION;
+    private final String DESTINATION_STATION;
+    private final String DEPARTURE_TIME;
+    
     private Route(){
-        this.departureTime = null;
-        this.destinationStation = null;
-        this.originStation = null;
+        this.DEPARTURE_TIME = null;
+        this.DESTINATION_STATION = null;
+        this.ORIGIN_STATION = null;
     }
 
     private Route(RouteBuilder builder) {
-        this.originStation = builder.originStation;
-        this.destinationStation = builder.destinationStation;
-        this.departureTime = builder.departureTime;
+        this.ORIGIN_STATION = builder.originStation;
+        this.DESTINATION_STATION = builder.destinationStation;
+        this.DEPARTURE_TIME = builder.departureTime;
     }
 
-    public String getOriginStation() { return originStation; }
-    public String getDestinationStation() { return destinationStation; }
-    public String getDepartureTime() { return departureTime; }
-
+    public String getOriginStation() { return ORIGIN_STATION; }
+    public String getDestinationStation() { return DESTINATION_STATION; }
+    public String getDepartureTime() { return DEPARTURE_TIME; }
+    
     public static Route selectRoute() {
         Scanner scanner = new Scanner(System.in);
         String[] stations = { "Monumento", "5th Avenue", "R. Papa", "Abad Santos", "Blumentritt" };
