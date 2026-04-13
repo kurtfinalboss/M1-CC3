@@ -1,24 +1,29 @@
 package cc3.m1cc3;
+
 import java.util.Random;
 import java.util.Scanner;
 
 public class Reservation {
     private final Scanner sc = new Scanner(System.in);
     private final String RESERVATION_CODE;
-    private final Passenger passenger;
-    private final Route route;
+    private final Passenger PASSENGER;
+    private final Route ROUTE;
 
     private Reservation(){
         this.RESERVATION_CODE = null;
-        this.passenger = null;
-        this.route = null;
+        this.PASSENGER = null;
+        this.ROUTE = null;
     }
     
     private Reservation(ReservationBuilder builder ){
         this.RESERVATION_CODE = generateReservationCode();
-        this.passenger = builder.passenger;
-        this.route = builder.route;
+        this.PASSENGER = builder.passenger;
+        this.ROUTE = builder.route;
     }
+    
+    public String getReservationCode(){ return RESERVATION_CODE;}
+    public Passenger getPassenger(){ return PASSENGER;}
+    public Route getRoute(){ return ROUTE;}
     
     public void reservationConfirmed(){
         System.out.println("\n|****************************************************************|");
@@ -65,7 +70,7 @@ public class Reservation {
      
      public void confirmReservation(){
          
-        Reservation reserve = new Reservation.ReservationBuilder().setPassenger(passenger).setRoute(route).build();
+        Reservation reserve = new Reservation.ReservationBuilder().setPassenger(PASSENGER).setRoute(ROUTE).build();
         System.out.println("\n===============================================");
         System.out.println("#             RESERVATION SUMMARY             #");
         System.out.println("===============================================");
@@ -78,10 +83,6 @@ public class Reservation {
         System.out.printf("%-18s : %s%n", "Departure Time", reserve.getRoute().getDepartureTime());
         System.out.println("===============================================");
      }
-     
-     public String getReservationCode(){ return RESERVATION_CODE;}
-     public Passenger getPassenger(){ return passenger;}
-     public Route getRoute(){ return route;}
     
     public static class ReservationBuilder{
         private String reservationCode;
