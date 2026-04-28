@@ -1,9 +1,10 @@
-package cc3.m1cc3;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Repository {
@@ -12,87 +13,185 @@ public class Repository {
     private Repository(){
         this.DBURL = null;
     }
-  
     private Repository(String dbURL){
         this.DBURL = dbURL;
     }
     
-    public static String passengerExists(String name, String contact, String emailAddress){
-        String url = "jdbc:sqlite:D:\\TrainHubStation.db";
-
-        boolean nameExists = false;
-        boolean contactExists = false;
-        boolean emailExists = false;
-
-        try(Connection conn = DriverManager.getConnection(url)){
-            String sql = "SELECT fullname, contactNumber, emailAddress FROM tbl_train";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-
-            while(rs.next()){
-                if(rs.getString("fullname").equalsIgnoreCase(name)){
-                    nameExists = true;
-                }
-                if(rs.getString("contactNumber").equals(contact)){
-                    contactExists = true;
-                }
-                if(rs.getString("emailAddress").equalsIgnoreCase(emailAddress)){
-                    emailExists = true;
-                }
-            }
-
-        } catch(Exception e){
-            return "Database error: " + e.getMessage();
-        }
-
-        // 
-        if(nameExists && contactExists && emailExists){
-            return "Name, Contact number, and Email address already exist!";
-        } else if(nameExists && contactExists){
-            return "Name and Contact number already exist!";
-        } else if(nameExists && emailExists){
-            return "Name and Email address already exist!";
-        } else if(contactExists && emailExists){
-            return "Contact number and Email address already exist!";
-        } else if(nameExists){
-            return "Name already exists!";
-        } else if(contactExists){
-            return "Contact already exists!";
-        } else if(emailExists){
-            return "Email already exists!";
-        }
-
-        return null;
-    }
-    
-    public void savePassenger(Reservation reservation) {
-
-        String sql = "INSERT INTO tbl_train(fullname, contactNumber, emailAddress, PassengerCategory, discountRate, originStation, destinationStation, departureTime, reservationCode) VALUES (?,?, ?, ?, ?, ?, ?,?,?)";
+   
+   public void savePassenger(Passenger p) {
+        String sql = "INSERT INTO tbl_passenger(fullname, password, contactNumber, emailAddress) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(DBURL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, reservation.getPassenger().getFullname());
-            pstmt.setString(2, reservation.getPassenger().getContactNumber());
-            pstmt.setString(3, reservation.getPassenger().getEmailAddress());
-            pstmt.setString(4, reservation.getPassenger().getPassengerCategory());
-            pstmt.setDouble(5, reservation.getPassenger().getDiscountRate());
-            pstmt.setString(6, reservation.getRoute().getOriginStation());
-            pstmt.setString(7, reservation.getRoute().getDestinationStation());
-            pstmt.setString(8, reservation.getRoute().getDepartureTime());
-            pstmt.setString(9, reservation.getReservationCode());
-            
-            
+
+            pstmt.setString(1, p.getFullname());
+            pstmt.setString(2, p.getPassword());
+            pstmt.setString(3, p.getContactNumber());
+            pstmt.setString(4, p.getEmailAddress());
+
             pstmt.executeUpdate();
-            System.out.println("\nPassenger saved successfully!");
-            System.out.println("|****************************************************************|");
-            System.out.printf("%50s%n", "Thank you for using our service!");
-            System.out.println("|****************************************************************|");
+
+            System.out.println("\nPassenger registered successfully!");
 
         } catch (SQLException e) {
             System.err.println("Failed to save passenger: " + e.getMessage());
         }
+   }
+   
+   public void saveReservation(Reservation r) {
+       String sql = "INSERT INTO tbl_reservation(reservationCode, fullname, passengerCategory, discountRate, originStation, destinationStation, departureTime, reservationDate, seatNumber, totalFare) VALUES (?,?,?,?,?,?,?,?,?,?)";
+       try (Connection conn = DriverManager.getConnection(DBURL);
+               PreparedStatement ps = conn.prepareStatement(sql)) {
+           
+           ps.setString(1, r.getReservationCode());
+           ps.setString(2, r.getPassenger().getFullname());
+           ps.setString(3, r.getFare().getPassengerCategory());
+           ps.setDouble(4, r.getFare().getDiscountRate());
+           ps.setString(5, r.getRoute().getOriginStation());
+           ps.setString(6, r.getRoute().getDestinationStation());
+           ps.setString(7, r.getRoute().getDepartureTime());
+           ps.setString(8, r.getRoute().getReservationDate());
+           ps.setInt(9, r.getSeatNumber());
+           ps.setDouble(10, r.getTotalFare());
+           
+           ps.executeUpdate();
+       } catch (Exception e) {
+           System.out.println(e.getMessage());
+       }
+   }
+   
+   public List<String[]> getReservations(String name) {
+       
+       List<String[]> list = new ArrayList<>();
+       
+       String sql = "SELECT * FROM tbl_reservation WHERE fullname=?";
+       
+       try (Connection conn = DriverManager.getConnection(DBURL);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String[] data = {
+                    rs.getString("reservationCode"),
+                    rs.getString("fullname"),
+                    rs.getString("passengerCategory"),
+                    String.valueOf(rs.getDouble("discountRate")),
+                    rs.getString("originStation"),
+                    rs.getString("destinationStation"),
+                    rs.getString("departureTime"),
+                    rs.getString("reservationDate"),
+                    String.valueOf(rs.getInt("seatNumber")),
+                    String.valueOf(rs.getDouble("totalFare")),
+            };
+                list.add(data);
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return list;
     }
+    
+    public Passenger login(String name, String password) {
+        String sql = "SELECT * FROM tbl_passenger WHERE fullname=? AND password=?";
+
+        try (Connection conn = DriverManager.getConnection(DBURL);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, name);
+            ps.setString(2, password);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return new Passenger.PassengerBuilder()
+                        .setFullname(rs.getString("fullname"))
+                        .setPassword(rs.getString("password"))
+                        .setContactNumber(rs.getString("contactNumber"))
+                        .setEmailAddress(rs.getString("emailAddress"))
+                        .build();
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+   
+    public static String passengerExists(String name, String password , String contact, String emailAddress){
+        String url = "jdbc:sqlite:D:\\TrainHubStation.db";
+
+        boolean nameExists = false;
+        boolean passExists = false;
+        boolean contactExists = false;
+        boolean emailExists = false;
+        
+        try(Connection conn = DriverManager.getConnection(url)){
+            String sql = "SELECT fullname, password, contactNumber, emailAddress FROM tbl_passenger";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()){
+                if (name.equalsIgnoreCase(rs.getString("fullname"))) {
+                    nameExists = true;
+                }
+                
+                if (name.equalsIgnoreCase(rs.getString("password"))) {
+                    passExists = true;
+                }
+                
+                if (name.equalsIgnoreCase(rs.getString("contactNumber"))) {
+                    contactExists = true;
+                }
+                
+                if (name.equalsIgnoreCase(rs.getString("emailAddress"))) {
+                    emailExists = true;
+                }
+            }
+        } catch(Exception e){
+            return "Database error: " + e.getMessage();
+        }
+        
+        if(nameExists && passExists && contactExists && emailExists)return "Name, Password, Contact number, and Email address already exist!";
+        if(nameExists && passExists && contactExists) return "Name, Password, and Contact number already exist!";
+        if(nameExists && passExists && emailExists) return "Name, Password, and Email address already exist!";
+        if(nameExists && contactExists && emailExists)return "Name, Contact number, and Email address already exist!";
+        if(passExists && contactExists && emailExists) return "Password, Contact number, and Email address already exist!";
+        if(nameExists && passExists) return "Name and Password already exist!";
+        if(nameExists && contactExists) return "Name and Contact number already exist!";
+        if(nameExists && emailExists) return "Name and Email address already exist!";
+        if(passExists && contactExists) return "Password and Contact number already exist!";
+        if(passExists && emailExists) return "Password and Email address already exist!";
+        if(contactExists && emailExists) return "Contact number and Email address already exist!";
+        if(nameExists) return "Name already exists!";
+        if(passExists) return "Password already exists!";
+        if(contactExists) return "Contact already exists!";
+        if(emailExists) return "Email already exists!";
+
+        return null;
+    }
+    
+    public boolean isSeatBooked(int seat) {
+        String sql = "SELECT * FROM tbl_reservation WHERE seatNumber=?";
+        
+        try (Connection conn = DriverManager.getConnection(DBURL);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, seat);
+            ResultSet rs = ps.executeQuery();
+
+            return rs.next(); // true if exists
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return false;
+    }
+    
     public static class RepositoryBuilder{
         private String path;
         
