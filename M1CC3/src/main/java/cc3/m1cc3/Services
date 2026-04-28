@@ -1,0 +1,476 @@
+
+package m1.m11;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class Services {
+    private final Scanner SC;
+    private final Repository REPO;
+    
+    private Services(ServicesBuilder builder){
+        this.SC = builder.sc;
+        this.REPO = builder.repo;
+    }
+    
+    public Passenger registerPassenger() {
+    String name = "", pass = "", contact = "", emailAddress = "";
+
+    while (true) {
+        System.out.println("\n==========================");
+        System.out.println("#  FILL-UP REGISTRATION  #");
+        System.out.println("==========================");
+
+        System.out.print("Create Username        : ");
+        name = SC.nextLine();
+
+        if (!name.matches("[a-zA-Z\\s.]+")) {
+            System.out.println("\n*INVALID INPUT!* Letters only.");
+            continue;
+        }
+
+        System.out.print("Create Password        : ");
+            if (pass.isEmpty()) {
+                pass = SC.nextLine();
+            } else {
+                System.out.println(pass);
+            }
+
+        System.out.print("Contact Number         : ");
+        contact = SC.nextLine();
+
+        if (!contact.matches("\\d{11}")) {
+            System.out.println("\n*INVALID INPUT!* Must be 11 digits.");
+            continue;
+        }
+
+        System.out.print("Email Address          : ");
+        emailAddress = SC.nextLine();
+
+        if (!emailAddress.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+            System.out.println("\n*INVALID INPUT!* Invalid email.");
+            continue;
+        }
+
+        String error = REPO.passengerExists(name, pass, contact, emailAddress);
+        if (error != null) {
+            System.out.println("\n*INVALID INPUT!* " + error);
+            continue;
+        }
+
+        System.out.println("\nWould you like to save this?");
+        System.out.println("[1] Save ");
+        System.out.println("[0] Cancel ");
+        System.out.print("Enter your choice: ");
+
+        if (SC.hasNextInt()) {
+            int choice = SC.nextInt();
+            SC.nextLine();
+
+            if (choice == 1) {
+
+                Passenger p = new Passenger.PassengerBuilder()
+                        .setFullname(name)
+                        .setPassword(pass)
+                        .setContactNumber(contact)
+                        .setEmailAddress(emailAddress)
+                        .build();
+
+                REPO.savePassenger(p);
+
+                System.out.println("\n*REGISTRATION SUCCESSFUL!*");
+                return p;
+
+            } else if (choice == 0) {
+                System.out.println("\n*REGISTRATION CANCELLED!*");
+                return null;
+            }
+        } else {
+            System.out.println("\n*INVALID INPUT!* Numbers only.");
+            SC.next();
+        }
+    }
+}
+    public Passenger loginPassenger() {
+        System.out.println("\n=== LOGIN ===");
+
+        System.out.print("Username: ");
+        String name = SC.nextLine();
+
+        System.out.print("Password: ");
+        String password = SC.nextLine();
+
+        Passenger p = REPO.login(name, password);
+
+        if (p != null) {
+            System.out.println("\n*LOGIN SUCCESSFUL!*");
+        }else {
+            System.out.println("\n*INVALID INPUT!* No existing account.");
+        }
+
+        return p;
+    }
+    public Fare checkStatus() {
+
+    while (true) {
+        int choice;
+
+        System.out.println("\n==============================");
+        System.out.println("#  PASSENGER CLASSIFICATION  #");
+        System.out.println("==============================");
+        System.out.println("[1] Regular");
+        System.out.println("[2] Student (20%)");
+        System.out.println("[3] Senior (30%)");
+        System.out.println("[4] PWD (25%)");
+        System.out.print("Enter choice: ");
+
+        if (SC.hasNextInt()) {
+            choice = SC.nextInt();
+            SC.nextLine();
+
+            String category;
+            double discount;
+
+            switch (choice) {
+                case 1 -> { category = "Regular"; discount = 0.0; }
+                case 2 -> { category = "Student"; discount = 0.20; }
+                case 3 -> { category = "Senior"; discount = 0.30; }
+                case 4 -> { category = "PWD"; discount = 0.25; }
+                default -> {
+                    System.out.println("\n*INVALID INPUT!* Please select a valid option");
+                    continue;
+                }
+            }
+
+            Fare f = new Fare.FareBuilder()
+                    .setPassengerCategory(category)
+                    .setDiscountRate(discount)
+                    .build();
+
+            System.out.println("\nCLASSIFICATION VERIFIED! Discount applied.");
+
+            while (true) {
+                System.out.print("\n[1] Confirm\n[0] Cancel\nEnter choice: ");
+
+                if (SC.hasNextInt()) {
+                    int confirm = SC.nextInt();
+                    SC.nextLine();
+
+                    if (confirm == 1) {
+                        return f;
+                    } else if (confirm == 0) {
+                        System.out.println("\nRestarting classification...");
+                        break;
+                    } else {
+                        System.out.println("\n*INVALID INPUT!* Please select a valid option");
+                    }
+                } else {
+                    System.out.println("\n*INVALID INPUT!* Enter a number only.");
+                    SC.next();
+                }
+            }
+
+        } else {
+            System.out.println("\n*INVALID INPUT!* Enter a number only.");
+            SC.next();
+        }
+    }
+}
+    
+    private final String[] stations = {
+        "Monumento", "5th Avenue", "R. Papa", "Abad Santos", "Blumentritt"
+    };
+    
+    private final Map<String, Double> stationFare = Map.of(
+        "Monumento", 25.0,
+        "5th Avenue", 25.0,
+        "R. Papa", 25.0,
+        "Abad Santos", 30.0,
+        "Blumentritt", 30.0
+    );
+    
+    public Route selectRoute() {
+        while (true) {
+
+        String origin = chooseStation("origin", null);
+        String destination = chooseStation("destination", origin);
+
+        System.out.println("\n===============================");
+        System.out.println("         SELECTED TRIP         ");
+        System.out.println("===============================");
+        System.out.println("ORIGIN      : " + origin);
+        System.out.println("DESTINATION : " + destination);
+        System.out.println("FARE        : P" + stationFare.get(destination));
+
+        System.out.print("\n[1] Confirm  [0] Cancel: ");
+
+        int choice = SC.nextInt();
+        SC.nextLine();
+
+        if (choice == 1) {
+            String departureTime = checkBoardingSchedule(origin, destination);
+            String reservationDate = getReservationDate();
+
+            return new Route.RouteBuilder()
+                    .setOriginStation(origin)
+                    .setDestinationStation(destination)
+                    .setDepartureTime(departureTime)
+                    .setReservationDate(reservationDate)
+                    .build();
+        }
+
+        System.out.println("\nSelection cancelled. Restarting...");
+    }
+}
+
+    private String chooseStation(String type, String origin) {
+        while (true) {
+                System.out.println("\n=====================");
+                System.out.println("#  ROUTE SELECTION  #");
+                System.out.println("=====================");
+
+                for (int i = 0; i < stations.length; i++) {
+
+                    String label = stations[i];
+
+                    // ✅ SHOW PRICE ONLY FOR DESTINATION
+                    if (type.equals("destination")) {
+                        label += " (P" + stationFare.get(stations[i]) + ")";
+                    }
+
+                    System.out.println("[" + (i + 1) + "] " + label);
+                }
+
+                System.out.print("Select " + type + ": ");
+
+                if (!SC.hasNextInt()) {
+                    System.out.println("*INVALID INPUT!*");
+                    SC.next();
+                    continue;
+                }
+
+                int choice = SC.nextInt();
+                SC.nextLine();
+
+                if (choice < 1 || choice > stations.length) {
+                    System.out.println("*INVALID CHOICE!*");
+                    continue;
+                }
+
+                String selected = stations[choice - 1];
+
+                if (origin != null && selected.equals(origin)) {
+                    System.out.println("*INVALID INPUT!* Destination cannot be same as origin.");
+                    continue;
+                }
+
+                return selected;
+            }
+        }
+    
+    private String checkBoardingSchedule(String origin, String destination) {
+
+    String[] times = {
+        "6:30 AM", "1:30 PM", "7:30 PM"
+    };
+
+    System.out.println("\n=============================");
+    System.out.println("      BOARDING SCHEDULE     ");
+    System.out.println("=============================");
+    System.out.println("ORIGIN      : " + origin);
+    System.out.println("DESTINATION : " + destination);
+
+    for (int i = 0; i < times.length; i++) {
+        System.out.println("[" + (i + 1) + "] " + times[i]);
+    }
+
+    int choice;
+
+    while (true) {
+        System.out.print("Select time: ");
+
+        if (SC.hasNextInt()) {
+            choice = SC.nextInt();
+            SC.nextLine();
+
+            if (choice >= 1 && choice <= times.length) {
+                return times[choice - 1];
+            }
+        } else {
+            SC.next();
+        }
+
+        System.out.println("*INVALID INPUT!*");
+    }
+}
+    private String getSeatLabel(int seatNumber) {
+       return (seatNumber % 2 == 1) ? "LS" + seatNumber : "RS" + seatNumber;
+    }
+    
+    private int selectSeat() {
+        System.out.println("\n===================");
+        System.out.println("#  SEAT SELECTION #");
+        System.out.println("===================");
+
+        while (true) {
+
+            for (int i = 1; i <= 10; i++) {
+
+                String label = getSeatLabel(i);
+
+                if (REPO.isSeatBooked(i)) {
+                    System.out.print("[X] ");
+                } else {
+                    System.out.print("[" + label + "] ");
+                }
+
+                if (i % 2 == 0) {
+                    System.out.println();
+                }
+
+                if (i % 4 == 0) {
+                    System.out.println();
+                }
+            }
+
+            System.out.println("(X = Booked)");
+            System.out.print("\nEnter seat (1-10): ");
+
+            if (SC.hasNextInt()) {
+                int seat = SC.nextInt();
+                SC.nextLine();
+
+                if (seat < 1 || seat > 10) {
+                    System.out.println("\n*INVALID!* Choose 1–10.\n");
+                    continue;
+                }
+
+                if (REPO.isSeatBooked(seat)) {
+                    System.out.println("\n*SEAT ALREADY BOOKED!* Choose another.\n");
+                    continue;
+                }
+
+                System.out.println("Selected Seat: " + getSeatLabel(seat));
+                return seat;
+
+            } else {
+                System.out.println("\n*INVALID INPUT!* Numbers only.\n");
+                SC.next();
+            }
+        }
+    }
+    
+    private double calculateFare(Route route, Fare fare) {
+        Map<String, Double> stationFare = new HashMap<>();
+        stationFare.put("Monumento", 25.0);
+        stationFare.put("5th Avenue", 25.0);
+        stationFare.put("R. Papa", 25.0);
+        stationFare.put("Abad Santos", 30.0);
+        stationFare.put("Blumentritt", 30.0);
+
+        double baseFare = stationFare.get(route.getDestinationStation());
+
+        double total = baseFare * (1 - fare.getDiscountRate());
+
+        return total;
+    }
+    
+    public void viewReservations(Passenger p){
+        System.out.println("\n=======================");
+        System.out.println("#  YOUR RESERVATIONS  #");
+        System.out.println("=======================");
+
+        var reservations = REPO.getReservations(p.getFullname());
+
+        if (reservations.isEmpty()) {
+            System.out.println("\nYou have no reservations yet. Kindly reserve first!");
+            return;
+        }
+
+        int count = 1;
+
+        for (String[] r : reservations) {
+            int seatNumber = Integer.parseInt(r[8]);
+            String seatLabel = getSeatLabel(seatNumber);
+             
+            System.out.println("\n===============================================");
+            System.out.println("Reservation #" + count++ + "     Date: " + r[7]);
+            System.out.println("-----------------------------------------------");
+            System.out.println("ReferenceCode    : " + r[0]);
+            System.out.println("Name             : " + r[1]);
+            System.out.println("Category         : " + r[2]);
+            System.out.println("Discount         : " + (Double.parseDouble(r[3]) * 100) + "%");
+            System.out.println("Route            : " + r[4] + " -> " + r[5]);
+            System.out.println("Departure Time   : " + r[6]);
+            System.out.println("Seat Number      : " + seatLabel);
+            System.out.println("Total Fare       : " + "P" + r[9]);
+            System.out.println("===============================================");
+            
+        }
+    }
+    
+    private String getReservationDate() {
+        while (true) {
+            System.out.print("Date(MM-DD-YYYY): ");
+            String reservationDate = SC.nextLine();
+
+            // basic validation
+            if (!reservationDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
+                System.out.println("*INVALID FORMAT!* Use MM-DD-YYYY.");
+                continue;
+            }
+            return reservationDate;
+        }
+    }
+    
+    public void reservePassenger(Passenger p) {
+        Fare fare = checkStatus();
+        Route route = selectRoute();
+        int seat = selectSeat();
+        double totalFare = calculateFare (route, fare);
+
+        Reservation r = new Reservation.ReservationBuilder()
+                .setPassenger(p)
+                .setFare(fare)
+                .setRoute(route)
+                .setSeatNumber(seat)
+                .setTotalFare(totalFare)
+                .build();
+
+        r.confirmReservation();
+        
+        System.out.println("\nPlease select an action");
+        System.out.println("[1] Confirm \n[0] Cancel ");
+        System.out.print("Enter a choice: ");
+        int choice = SC.nextInt();
+        SC.nextLine();
+        
+        if (choice == 1) {
+            r.reservationConfirmed();
+            REPO.saveReservation(r); 
+        }
+    }
+    
+    public static class ServicesBuilder {
+        private Scanner sc;
+        private Repository repo;
+
+        public ServicesBuilder setScanner(Scanner sc) {
+            this.sc = sc;
+            return this;
+        }
+
+        public ServicesBuilder setRepository(Repository repo) {
+            this.repo = repo;
+            return this;
+        }
+
+        public Services build() {
+            if (sc == null || repo == null) {
+                throw new IllegalStateException("Missing dependencies!");
+            }
+            return new Services(this);
+        }
+    }
+}
