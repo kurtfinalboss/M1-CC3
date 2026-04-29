@@ -38,19 +38,18 @@ public class Reservation {
     public double getTotalFare(){ return TOTAL_FARE; }
     
     
+    
     public void confirmReservation() {
         System.out.println("\n===============================================");
         System.out.println("#             RESERVATION SUMMARY             #");
         System.out.println("===============================================");
         System.out.printf("%-18s : %s%n", "Full Name", PASSENGER.getFullname());
-        System.out.printf("%-18s : %s%n", "Contact Number", PASSENGER.getContactNumber());
         System.out.printf("%-18s : %s%n", "Category", FARE.getPassengerCategory());
         System.out.printf("%-18s : %s%n", "Discount", FARE.getDiscountRate()* 100 + "%");
         System.out.printf("%-18s : %s%n", "Origin", ROUTE.getOriginStation());
         System.out.printf("%-18s : %s%n", "Destination", ROUTE.getDestinationStation());
         System.out.printf("%-18s : %s%n", "Departure Time", ROUTE.getDepartureTime());
         System.out.printf("%-18s : %s%n", "Date", ROUTE.getReservationDate());
-        System.out.println("===============================================");
     }
     
     public void reservationConfirmed() {
