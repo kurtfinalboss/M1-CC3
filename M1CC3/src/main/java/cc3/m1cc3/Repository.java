@@ -60,6 +60,27 @@ public class Repository {
        }
    }
    
+  public void deleteReservation(String reservationCode) {
+    String sql = "DELETE FROM tbl_reservation WHERE reservationCode = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, reservationCode);
+
+        int rows = pstmt.executeUpdate();
+
+        if (rows > 0) {
+            System.out.println("Reservation cancelled successfully.");
+        } else {
+            System.out.println("Reservation not found.");
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+   
    public List<String[]> getReservations(String name) {
        
        List<String[]> list = new ArrayList<>();
@@ -74,16 +95,16 @@ public class Repository {
 
             while (rs.next()) {
                 String[] data = {
-                    rs.getString("reservationCode"),
-                    rs.getString("fullname"),
-                    rs.getString("passengerCategory"),
-                    String.valueOf(rs.getDouble("discountRate")),
-                    rs.getString("originStation"),
-                    rs.getString("destinationStation"),
-                    rs.getString("departureTime"),
-                    rs.getString("reservationDate"),
-                    String.valueOf(rs.getInt("seatNumber")),
-                    String.valueOf(rs.getDouble("totalFare")),
+                    rs.getString("reservationCode"),//0
+                    rs.getString("fullname"),//1
+                    rs.getString("passengerCategory"),//2
+                    String.valueOf(rs.getDouble("discountRate")),//3
+                    rs.getString("originStation"),//4
+                    rs.getString("destinationStation"),//5
+                    rs.getString("departureTime"),//6
+                    rs.getString("reservationDate"),//7
+                    String.valueOf(rs.getInt("seatNumber")),//8
+                    String.valueOf(rs.getDouble("totalFare")),//9 
             };
                 list.add(data);
             }
