@@ -1,4 +1,3 @@
-package cc3.m1cc3;
 import java.util.Scanner;
 
 public class Main {
@@ -14,7 +13,6 @@ public class Main {
                 .setScanner(sc)
                 .setRepository(repo)
                 .build();
-        Fare f = new Fare.FareBuilder().build();
 
         while (true) {
             System.out.println("\n========================================");
@@ -25,8 +23,19 @@ public class Main {
             System.out.println("[0] Exit");
             System.out.print("Enter choice: ");
 
+            if (!sc.hasNextInt()) {
+                System.out.println("\n*INVALID INPUT!* Please enter a number only.");
+                sc.next(); // clear invalid input
+                continue;
+            }
+
             int choice = sc.nextInt();
             sc.nextLine();
+
+            if (choice < 0 || choice > 2) {
+                System.out.println("\n*INVALID INPUT!* Please select a valid option.");
+                continue;
+            }
 
             switch (choice) {
                 case 1 -> service.registerPassenger();
@@ -42,20 +51,32 @@ public class Main {
                             System.out.println("===============");
                             System.out.println("[1] View Reservation Summary");
                             System.out.println("[2] Reserve");
+                            System.out.println("[3] Cancel Reservation");
                             System.out.println("[0] Logout");
                             System.out.print("Enter choice: ");
+
+                            if (!sc.hasNextInt()) {
+                                System.out.println("\n*INVALID INPUT!* Please enter a number only.");
+                                sc.next();
+                                continue;
+                            }
 
                             int status = sc.nextInt();
                             sc.nextLine();
 
+                            if (status < 0 || status > 3) {
+                                System.out.println("\n*INVALID INPUT!* Please select a valid option.");
+                                continue;
+                            }
+
                             switch (status) {
                                 case 1 -> service.viewReservations(p);
-                                case 2 -> service.reservePassenger(p); // ✅ PASS USER
+                                case 2 -> service.reservePassenger(p);
+                                case 3 -> service.cancelReservation(p);
                                 case 0 -> {
                                     System.out.println("\n*SUCCESS!* Logging out...");
                                     break dashboard;
                                 }
-                                default -> System.out.println("*INVALID INPUT!*");
                             }
                         }
                     }
