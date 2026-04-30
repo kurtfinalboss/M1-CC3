@@ -76,9 +76,8 @@ public class Services {
                         .build();
 
                 REPO.savePassenger(p); // ✅ FIXED
-
-                System.out.println("\n*REGISTRATION SUCCESSFUL!*");
-                return p; // ✅ return passenger
+                return p;
+                
 
             } else if (choice == 0) {
                 System.out.println("\n*REGISTRATION CANCELLED!*");
@@ -90,6 +89,37 @@ public class Services {
         }
     }
 }
+    
+    public void setupPayment(Passenger p) {
+        
+        while (true) {
+        
+        System.out.println("\n=======================");
+        System.out.println("#  PAYMENT SETUP      #");
+        System.out.println("=======================");
+        System.out.println("[1] GCash");
+        System.out.println("[2] Card");
+        System.out.println("[3] Back");
+        System.out.print("Enter choice: ");
+
+        if (!SC.hasNextInt()) {
+            System.out.println("*INVALID INPUT!*");
+            SC.next();
+            continue;
+        }
+
+        int choice = SC.nextInt();
+        SC.nextLine();
+
+        switch (choice) {
+            case 1 -> setupGCash(p);
+            case 2 -> setupCard(p);
+            case 3 -> { return; }
+            default -> System.out.println("*INVALID CHOICE!*");
+        }
+    }
+}
+    
     public Passenger loginPassenger() {
         System.out.println("\n=== LOGIN ===");
 
@@ -144,8 +174,7 @@ public class Services {
         } else {
             System.out.println("\n*INVALID INPUT!* Please choose the correct option.");
         }
-    }
-    
+    }    
     public Fare checkStatus() {
     while (true) {
         int choice;
@@ -344,6 +373,7 @@ public class Services {
         System.out.println("*INVALID INPUT!*");
     }
 }
+    
     private String getSeatLabel(int seatNumber) {
        return (seatNumber % 2 == 1) ? "LS" + seatNumber : "RS" + seatNumber;
     }
@@ -401,7 +431,6 @@ public class Services {
         }
     }
     
-   
     public void viewReservations(Passenger p){
         System.out.println("\n=======================");
         System.out.println("#  YOUR RESERVATIONS  #");
@@ -462,13 +491,180 @@ public class Services {
     
     }
     
-    class CashPayment extends PaymentFramework {
-        public CashPayment(double amount, double discount, Reservation reservation) {
-            super(amount, discount, reservation);
+    public PaymentFramework selectPayment(double baseFare, double discount, Reservation r) {
+
+    while (true) {
+        System.out.println("\n=====================");
+        System.out.println("#  ONLINE PAYMENT   #");
+        System.out.println("=====================");
+        System.out.println("[1] Card");
+        System.out.println("[2] GCash");
+        System.out.print("Enter choice: ");
+
+        int choice = SC.nextInt();
+        SC.nextLine();
+
+        switch (choice) {
+
+            case 1:
+                System.out.print("Enter credit limit: ");
+                double credit = SC.nextDouble();
+                SC.nextLine();
+                return new CardPayment(baseFare, discount, r, credit);
+
+            case 2:
+                System.out.print("Enter GCash balance: ");
+                double balance = SC.nextDouble();
+                SC.nextLine();
+                return new GCashPayment(baseFare, discount, r, balance);
+                
+            default:
+                System.out.println("*INVALID INPUT!*");
+        }
     }
+}
+    
+    private void setupGCash(Passenger p) {//GCASH SETUP
+        String number, pin;
+        
+        if (REPO.hasGCash(p.getFullname())) {  
+            System.out.println("\n*GCASH ALREADY EXIST!*");  
+            return;  
+        }
+
+        while (true) {
+            System.out.print("Enter GCash Number (11 digits): ");
+            number = SC.nextLine();
+
+            if (!number.matches("\\d{11}")) {
+                System.out.println("*INVALID INPUT!*");
+                continue;
+            }
+
+            System.out.print("Create 4-digit PIN: ");
+            pin = SC.nextLine();
+
+            if (!pin.matches("\\d{4}")) {
+                System.out.println("\n*INVALID PIN!*");
+                continue;
+            }
+
+            break;
+        }
+
+        REPO.saveGCash(p.getFullname(), number, pin);
+
+        System.out.println("\n*GCASH SETUP SUCCESSFULL!*");
+    }
+    
+    private void setupCard(Passenger p) {//CREDIT CARD SETUP
+        String pin;
+        
+        if (REPO.hasCard(p.getFullname())) {  
+            System.out.println("\n*CREDIT CARD ALREADY EXIST!*");  
+            return;  
+        }
+
+        while (true) {
+            System.out.print("Create 4-digit Card PIN: ");
+            pin = SC.nextLine();
+
+            if (!pin.matches("\\d{4}")) {
+                System.out.println("\n*INVALID PIN! Please try again.*");
+                continue;
+            }
+
+            break;
+        }
+
+        REPO.saveCard(p.getFullname(), pin);
+
+        System.out.println("\n*CARD SETUP COMPLETE!*");
+    }
+    
+    class GCashPayment extends PaymentFramework {
+        private double balance;
+
+        public GCashPayment(double amount, double discount, Reservation reservation, double balance) {
+            super(amount, discount, reservation);
+            this.balance = balance;
+        }
+        
         @Override
         public boolean validatePayment() {
-            return amount > 0;
+
+            String storedPin = REPO.getGCashPin(reservation.getPassenger().getFullname());
+
+            if (storedPin == null) {
+                System.out.println("No GCash account found.");
+                return false;
+            }
+
+            int attempts = 3;
+
+            while (attempts > 0) {
+
+                System.out.print("Enter GCash PIN: ");
+                String input = SC.nextLine();
+
+                if (!input.matches("\\d{4}")) {
+                    System.out.println("*INVALID INPUT!*");
+                    continue;
+                }
+
+                if (input.equals(storedPin)) {
+                    System.out.println("GCash Verified!");
+                    return true;
+                } else {
+                    attempts--;
+                    System.out.println("Incorrect PIN. Attempts left: " + attempts);
+                }
+            }
+
+            return false;
+        }
+    }
+    
+    class CardPayment extends PaymentFramework {
+        private double creditLimit;
+
+        public CardPayment(double amount, double discount, Reservation reservation, double creditLimit) {
+            super(amount, discount, reservation);
+            this.creditLimit = creditLimit;
+        }
+
+        @Override
+        public boolean validatePayment() {
+
+            String storedPin = REPO.getCardPin(reservation.getPassenger().getFullname());
+
+            if (storedPin == null) {
+                System.out.println("No Card found.");
+                return false;
+            }
+
+            int attempts = 3;
+
+            while (attempts > 0) {
+
+                System.out.print("Enter Card PIN: ");
+                String input = SC.nextLine();
+
+                if (!input.matches("\\d{4}")) {
+                    System.out.println("*INVALID INPUT!*");
+                    continue;
+                }
+
+                if (input.equals(storedPin)) {
+                    System.out.println("Card Verified!");
+                    return true;
+                } else {
+                    attempts--;
+                    System.out.println("Incorrect PIN. Attempts left: " + attempts);
+                }
+            }
+
+            return false;
         }
     }
     
@@ -490,17 +686,18 @@ public class Services {
                 .setTotalFare(baseFare)
                 .build();
         
-        PaymentFramework payment = new CashPayment(baseFare, discount, r);
+        PaymentFramework payment = selectPayment(baseFare, discount, r);
         double finalTotal = payment.processInvoice();
         
-        r = new Reservation.ReservationBuilder()
+          r = new Reservation.ReservationBuilder()
                 .setPassenger(p)
                 .setFare(fare)
                 .setRoute(route)
                 .setSeatNumber(seat)
                 .setTotalFare(finalTotal)
+                .setPaymentType(payment.getClass().getSimpleName())
                 .build();
-        
+
         System.out.println("\nPlease select an action");
         System.out.println("[1] Confirm \n[0] Cancel ");
         System.out.print("Enter a choice: ");
@@ -512,7 +709,7 @@ public class Services {
             r.reservationConfirmed();
             REPO.saveReservation(r);
         } else {
-            System.out.println("*RESERVATION SUCCESSFULY CANCELLED!*");
+            System.out.println("\n*RESERVATION SUCCESSFULY CANCELLED!*");
         }
     }
     
