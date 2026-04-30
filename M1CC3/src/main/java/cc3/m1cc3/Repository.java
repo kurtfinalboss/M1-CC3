@@ -60,7 +60,117 @@ public class Repository {
        }
    }
    
-  public void deleteReservation(String reservationCode) {
+   public void saveGCash(String fullName, String contactNumber, String pin) {
+       String sql = "INSERT INTO tbl_gcashPayment(fullName, contactNumber, pin) VALUES (?, ?, ?)";
+       
+       try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+         pstmt.setString(1, fullName);
+         pstmt.setString(2, contactNumber);
+         pstmt.setString(3, pin);
+
+         pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+   public String getGCashPin(String fullname) {
+
+    String sql = "SELECT pin FROM tbl_gcashPayment WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, fullname);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getString("pin");
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return null;
+}
+   
+   public void saveCard(String fullName, String pin) {
+       String sql = "INSERT INTO tbl_cardPayment(fullName, pin) VALUES (?, ?)";
+       
+       try (Connection conn = DriverManager.getConnection(DBURL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, fullName);
+            pstmt.setString(2, pin);
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+   public String getCardPin(String fullname) {
+
+    String sql = "SELECT pin FROM tbl_cardPayment WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, fullname);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getString("pin");
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return null;
+}
+   
+   public boolean hasGCash(String fullname) {
+
+    String sql = "SELECT 1 FROM tbl_gcashPayment WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, fullname);
+        ResultSet rs = pstmt.executeQuery();
+
+        return rs.next();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return false;
+} 
+   public boolean hasCard(String fullname) {
+
+    String sql = "SELECT 1 FROM tbl_cardPayment WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, fullname);
+        ResultSet rs = pstmt.executeQuery();
+
+        return rs.next();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return false;
+}
+   
+   public void deleteReservation(String reservationCode) {
     String sql = "DELETE FROM tbl_reservation WHERE reservationCode = ?";
 
     try (Connection conn = DriverManager.getConnection(DBURL);
@@ -115,8 +225,8 @@ public class Repository {
 
         return list;
     }
-    
-    public Passenger login(String name, String password) {
+   
+   public Passenger login(String name, String password) {
         String sql = "SELECT * FROM tbl_passenger WHERE fullname=? AND password=?";
 
         try (Connection conn = DriverManager.getConnection(DBURL);
@@ -142,7 +252,7 @@ public class Repository {
         return null;
     }
    
-    public static String passengerExists(String name, String password , String contact, String emailAddress){
+   public static String passengerExists(String name, String password , String contact, String emailAddress){
         String url = "jdbc:sqlite:D:\\TrainHubStation.db";
 
         boolean nameExists = false;
@@ -194,8 +304,8 @@ public class Repository {
 
         return null;
     }
-    
-    public boolean isSeatBooked(int seat) {
+   
+   public boolean isSeatBooked(int seat) {
         String sql = "SELECT * FROM tbl_reservation WHERE seatNumber=?";
         
         try (Connection conn = DriverManager.getConnection(DBURL);
@@ -212,8 +322,8 @@ public class Repository {
 
         return false;
     }
-    
-    public static class RepositoryBuilder{
+   
+   public static class RepositoryBuilder{
         private String path;
         
         public RepositoryBuilder setDatabasePath(){
