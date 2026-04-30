@@ -24,11 +24,11 @@ abstract class PaymentFramework {
 
     public void finalizeTransaction(double finalAmount) {
         System.out.println("\n===== PAYMENT SUMMARY =====");
-        System.out.printf("Base Fare       : %.2f%n", amount);
-        System.out.printf("VAT (12%%)       : %.2f%n", amount * VATRATE);
-        System.out.printf("Discount        : %.2f%n", discount);
+        System.out.printf("Base Fare       : P%.2f%n", amount);
+        System.out.printf("VAT (12%%)       : P%.2f%n", amount * VATRATE);
+        System.out.printf("Discount        : P%.2f%n", discount);
         System.out.println("---------------------------");
-        System.out.printf("Final Total     : %.2f%n", finalAmount);
+        System.out.printf("Final Total     : P%.2f%n", finalAmount);
     }
 
     public double processInvoice() {
@@ -47,5 +47,8 @@ abstract class PaymentFramework {
         return total;
     }
 }
+
+
+
 
 
