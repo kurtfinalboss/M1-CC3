@@ -1,3 +1,4 @@
+package m1.m11;
 import java.util.Scanner;
 
 public class Main {
@@ -20,7 +21,6 @@ public class Main {
             System.out.println("========================================");
             System.out.println("[1] Register");
             System.out.println("[2] Login");
-            System.out.println("[3] Setup Payment");
             System.out.println("[0] Exit");
             System.out.print("Enter choice: ");
 
@@ -33,7 +33,7 @@ public class Main {
             int choice = sc.nextInt();
             sc.nextLine();
 
-            if (choice < 0 || choice > 3) {
+            if (choice < 0 || choice > 2) {
                 System.out.println("\n*INVALID INPUT!* Please select a valid option.");
                 continue;
             }
@@ -53,6 +53,7 @@ public class Main {
                         System.out.println("[1] View Reservation Summary");
                         System.out.println("[2] Reserve");
                         System.out.println("[3] Cancel Reservation");
+                        System.out.println("[4] Setup Payment");
                         System.out.println("[0] Logout");
                         System.out.print("Enter choice: ");
 
@@ -65,7 +66,7 @@ public class Main {
                         int status = sc.nextInt();
                         sc.nextLine();
 
-                        if (status < 0 || status > 3) {
+                        if (status < 0 || status > 4) {
                             System.out.println("\n*INVALID INPUT!* Please select a valid option.");
                             continue;
                         }
@@ -74,6 +75,7 @@ public class Main {
                             case 1 -> service.viewReservations(p);
                             case 2 -> service.reservePassenger(p);
                             case 3 -> service.cancelReservation(p);
+                            case 4 -> service.setupPayment(p);
                             case 0 -> {
                                 System.out.println("\n*SUCCESS!* Logging out...");
                                 break dashboard;
@@ -82,15 +84,6 @@ public class Main {
                     }
                 }
             }
-
-                case 3 -> {
-                    Passenger p = service.loginPassenger(); // ✅ FIXED
-
-                    if (p != null) {
-                        service.setupPayment(p);
-                    }
-                }
-
                 case 0 -> {
                     System.out.println("\nTHANK YOU FOR USING OUR SYSTEM!");
                     return;
