@@ -2,6 +2,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class Services {
     private final Scanner SC;
@@ -60,12 +63,8 @@ public class Services {
         System.out.println("\nWould you like to save this?");
         System.out.println("[1] Save ");
         System.out.println("[0] Cancel ");
-        System.out.print("Enter your choice: ");
-
-        if (SC.hasNextInt()) {
-            int choice = SC.nextInt();
-            SC.nextLine();
-
+        int choice = numberAuthenticator(0,1);
+        
             if (choice == 1) {
 
                 Passenger p = new Passenger.PassengerBuilder()
@@ -77,16 +76,12 @@ public class Services {
 
                 REPO.savePassenger(p); // ✅ FIXED
                 return p;
-                
 
-            } else if (choice == 0) {
+            } else {
                 System.out.println("\n*REGISTRATION CANCELLED!*");
                 return null;
             }
-        } else {
-            System.out.println("\n*INVALID INPUT!* Numbers only.");
-            SC.next();
-        }
+         
     }
 }
     
@@ -95,26 +90,18 @@ public class Services {
         while (true) {
         
         System.out.println("\n=======================");
-        System.out.println("#  PAYMENT SETUP      #");
+        System.out.println("#    PAYMENT SETUP    #");
         System.out.println("=======================");
         System.out.println("[1] GCash");
         System.out.println("[2] Card");
         System.out.println("[0] Back");
-        System.out.print("Enter choice: ");
-
-        if (!SC.hasNextInt()) {
-            System.out.println("\n*INVALID INPUT!*");
-            SC.next();
-            continue;
-        }
-
-        int choice = SC.nextInt();
-        SC.nextLine();
-
+        
+        int choice = numberAuthenticator(0,2);
+        
         switch (choice) {
             case 1 -> setupGCash(p);
             case 2 -> setupCard(p);
-            case 0   -> { return; }
+            case 0 -> { return; }
             default -> System.out.println("\n*INVALID CHOICE!*");
         }
     }
@@ -141,139 +128,95 @@ public class Services {
     }
     
    public void cancelReservation(Passenger p) {
-    List<String[]> reservations = REPO.getReservations(p.getFullname());
-
-    if (reservations.isEmpty()) {
-        System.out.println("\nNo reservations to cancel. Kindly reserve first.");
-        return;
-    }
-
-    int count = 1;
-
-    System.out.printf("%-5s | %-10s | %-12s | %-25s | %-10s | %-8s%n",
-            " No. ", " Ticket ", " Seat Number ", " Origin -> Destination ", " Date", "Time ");
-    System.out.println("==========================================================================================");
-
-    for (String[] r : reservations) {
-        System.out.printf("%-5s | %-10s | %-12s | %-25s | %-10s | %-8s%n",
-                count,
-                r[0],
-                r[8],
-                r[4] + " -> " + r[5],
-                r[7],
-                r[6]);
-        count++;
-    }
-
-    int attempts = 0;
-    int choice = -1;
-
-    while (true) {
-        System.out.print("\nEnter reservation number to delete: ");
-        String input = SC.nextLine();
-
-        if (!input.matches("\\d+")) {
-            attempts++;
-            System.out.println("\n*INVALID INPUT!* Numbers only.");
-
-        } else {
-            choice = Integer.parseInt(input);
-
-            if (choice < 1 || choice > reservations.size()) {
-                attempts++;
-                System.out.println("\n*INVALID INPUT!* Please select a valid option.");
-            } else {
-                break;
-            }
-        }
-
-        if (attempts >= 3) {
-            while (true) {
-                System.out.println("\nToo many invalid attempts.");
-                System.out.println("[1] Try again");
-                System.out.println("[0] Return to menu");
-                System.out.print("Choose: ");
-
-                String retryInput = SC.nextLine();
-
-                if (!retryInput.matches("\\d")) {
-                    System.out.println("\n*INVALID INPUT!* Enter numbers only.");
-                    continue;
-                }
-
-                int retryChoice = Integer.parseInt(retryInput);
-
-                if (retryChoice == 1) {
-                    attempts = 0;
-                    break;
-                } else if (retryChoice == 0) {
-                    System.out.println("\n*RETURNING TO MENU...*");
-                    return;
-                } else {
-                    System.out.println("\n*INVALID CHOICE!* Please select a valid option.");
-                }
-            }
-        }
-    }
-
+       List<String[]> reservations = REPO.getReservations(p.getFullname());
    
-    String codeToDelete = reservations.get(choice - 1)[0];
 
-    while (true) {
-        System.out.println("\n[1] Delete reservation");
-        System.out.println("[0] Return");
-        System.out.print("Choose: ");
-
-        String confirmInput = SC.nextLine();
-
-        if (!confirmInput.matches("\\d")) {
-            System.out.println("\n*INVALID INPUT!* Enter numbers only.");
-            continue;
+        if (reservations.isEmpty()) {
+            System.out.println("\nNo reservations to cancel. Kindly reserve first.");
+            return;
         }
 
-        int confirmChoice = Integer.parseInt(confirmInput);
+        int count = 1;
+        System.out.println("\n==========================================================================================");
+        System.out.print("RESERVATION SUMMARY");
+        System.out.printf("%-5s | %-10s | %-12s | %-25s | %-10s | %-8s%n",
+                "\nNo. ", " Ticket ", " Seat Number ", " Origin -> Destination ", " Date", "Time ");
+        System.out.println("------------------------------------------------------------------------------------------");
+        for (String[] r : reservations) {
+            System.out.printf("%-5s | %-10s | %-12s | %-25s | %-10s | %-8s%n",
+                    count,
+                    r[0],//ticket
+                    r[8],//seat
+                    r[4] + " -> " + r[5], //origin -> destination
+                    r[7],//date
+                    r[6]);//time
+            count++;
+        }
+        System.out.println("==========================================================================================");
+        
+        System.out.print("\nEnter reservation number to delete: ");
+        int choice = numberAuthenticator(1, reservations.size());
 
-        if (confirmChoice == 1) {
-            REPO.deleteReservation(codeToDelete);
-            break;
-        } else if (confirmChoice == 0) {
-            System.out.println("\nCancellation aborted. Returning...");
-            return;
+        String[] selected = reservations.get(choice - 1);
+        System.out.println("\n=======================================================");
+        System.out.println("Reservation: " + count );
+        System.out.println("Ticket: " + selected[0]);
+        System.out.println("Seat: " + selected[8]);
+        System.out.println("Stations: "+ selected[4] + " -> " + selected[5]);
+        System.out.println("Date: "+ selected [7]);
+        System.out.println("Time: "+ selected [6]);
+        System.out.println("=======================================================");
+        
+        System.out.println("\nWould you like to confirm?");
+        System.out.println("[1] Confirm ");
+        System.out.println("[0] Cancel");
+
+        int confirm = numberAuthenticator(0, 1);
+
+        if (confirm == 1) {
+            REPO.deleteReservation(selected[0]);
+            System.out.println("\n*RESERVATION CANCELLED SUCCESSFULLY!*");
         } else {
-            System.out.println("\n*INVALID CHOICE!* Please select a valid option.");
+            System.out.println("\nCancellation aborted.");
         }
     }
-}
     
     public Fare checkStatus() {
-    while (true) {
-        int choice;
+        
+        while (true) {
+            System.out.println("\n==============================");
+            System.out.println("#  PASSENGER CLASSIFICATION  #");
+            System.out.println("==============================");
+            System.out.println("[1] Regular");
+            System.out.println("[2] Student (20%)");
+            System.out.println("[3] Senior (30%)");
+            System.out.println("[4] PWD (25%)");
 
-        System.out.println("\n==============================");
-        System.out.println("#  PASSENGER CLASSIFICATION  #");
-        System.out.println("==============================");
-        System.out.println("[1] Regular");
-        System.out.println("[2] Student (20%)");
-        System.out.println("[3] Senior (30%)");
-        System.out.println("[4] PWD (25%)");
-        System.out.print("Enter choice: ");
+            int choice = numberAuthenticator(1, 4);
 
-        if (SC.hasNextInt()) {
-            choice = SC.nextInt();
-            SC.nextLine();
-
-            String category;
-            double discount;
+            String category = "";
+            double discount = 0.0;
 
             switch (choice) {
-                case 1 -> { category = "Regular"; discount = 0.0; }
-                case 2 -> { category = "Student"; discount = 0.20; }
-                case 3 -> { category = "Senior"; discount = 0.30; }
-                case 4 -> { category = "PWD"; discount = 0.25; }
-                default -> {
-                    System.out.println("\n*INVALID INPUT!* Please select a valid option");
-                    continue;
-                }
+                case 1:
+                    category = "Regular";
+                    discount = 0.0;
+                    break;
+
+                case 2:
+                    category = "Student";
+                    discount = 0.20;
+                    break;
+
+                case 3:
+                    category = "Senior";
+                    discount = 0.30;
+                    break;
+
+                case 4:
+                    category = "PWD";
+                    discount = 0.25;
+                    break;
             }
 
             Fare f = new Fare.FareBuilder()
@@ -282,33 +225,20 @@ public class Services {
                     .build();
 
             System.out.println("\nCLASSIFICATION VERIFIED! Discount applied.");
+            System.out.println("\nWould you like to confirm?");
+            System.out.println("[1] Confirm");
+            System.out.println("[0] Cancel");
 
-            while (true) {
-                System.out.print("\n[1] Confirm\n[0] Cancel\nEnter choice: ");
+            int confirm = numberAuthenticator(0, 1);
 
-                if (SC.hasNextInt()) {
-                    int confirm = SC.nextInt();
-                    SC.nextLine();
-
-                    if (confirm == 1) {
-                        return f; // ✅ correct return
-                    } else if (confirm == 0) {
-                        System.out.println("\nRestarting classification...");
-                        break;
-                    } else {
-                        System.out.println("\n*INVALID INPUT!* Please select a valid option");
-                    }
-                } else {
-                    System.out.println("\n*INVALID INPUT!* Enter a number only.");
-                    SC.next();
-                }
+            if (confirm == 1) {
+                return f; 
+            } else {
+                System.out.println("\nRestarting classification...\n");
+              
             }
-        } else {
-            System.out.println("\n*INVALID INPUT!* Enter a number only.");
-            SC.next();
         }
     }
-}
     
     private final String[] stations = {
         "Monumento", "5th Avenue", "R. Papa", "Abad Santos", "Blumentritt"
@@ -333,14 +263,13 @@ public class Services {
         System.out.println("===============================");
         System.out.println("ORIGIN      : " + origin);
         System.out.println("DESTINATION : " + destination);
-        System.out.println("FARE        : P" + stationFare.get(destination)); // ✅ SHOW PRICE HERE
-
-        System.out.println("\n[1] Confirm  \n[0] Cancel: ");
-        System.out.print("Enter choice: ");
+        System.out.println("FARE        : P" + stationFare.get(destination));
         
-         if (SC.hasNextInt()) {
-                    int choice = SC.nextInt();
-                    SC.nextLine();
+        System.out.println("\nWould you like to confirm?");
+        System.out.println("[1] Confirm");
+        System.out.println("[0] Cancel");
+        
+        int choice = numberAuthenticator(0,1);
 
                     if (choice == 1) {
                         String departureTime = checkBoardingSchedule(origin, destination);
@@ -355,107 +284,83 @@ public class Services {
                     } else {
                         System.out.println("\n*INVALID INPUT!* Please select a valid option");
                     }
-                } else {
-                    System.out.println("\n*INVALID INPUT!* Enter a number only.");
-                    SC.next();
-                }
+                
         System.out.println("\nSelection cancelled. Restarting...");
     }
 }
 
     private String chooseStation(String type, String origin) {
+        
         while (true) {
-                System.out.println("\n=====================");
-                System.out.println("#  ROUTE SELECTION  #");
-                System.out.println("=====================");
+            System.out.println("\n=====================");
+            System.out.println("#  ROUTE SELECTION  #");
+            System.out.println("=====================");
 
-                for (int i = 0; i < stations.length; i++) {
+            for (int i = 0; i < stations.length; i++) {
 
-                    String label = stations[i];
-
-                    // ✅ SHOW PRICE ONLY FOR DESTINATION
-                    if (type.equals("destination")) {
-                        label += " (P" + stationFare.get(stations[i]) + ")";
-                    }
-
-                    System.out.println("[" + (i + 1) + "] " + label);
+                String label = stations[i];
+                
+                if (type.equals("destination")) {
+                    label += " (P" + stationFare.get(stations[i]) + ")";
                 }
 
-                System.out.print("Select " + type + ": ");
-
-                if (!SC.hasNextInt()) {
-                    System.out.println("\n*INVALID INPUT!* Enter a number only.");
-                    SC.next();
-                    continue;
-                }
-
-                int choice = SC.nextInt();
-                SC.nextLine();
-
-                if (choice < 1 || choice > stations.length) {
-                    System.out.println("\n*INVALID INPUT!* Please choose a valid option.");
-                    continue;
-                }
-
-                String selected = stations[choice - 1];
-
-                if (origin != null && selected.equals(origin)) {
-                    System.out.println("*\nINVALID INPUT!* Destination cannot be same as origin.");
-                    continue;
-                }
-
-                return selected;
+                System.out.println("[" + (i + 1) + "] " + label);
             }
+
+            int choice = numberAuthenticator(1, stations.length);
+
+            String selected = stations[choice - 1];
+
+            if (origin != null && selected.equals(origin)) {
+                System.out.println("\n*INVALID!* Destination cannot be the same as origin.");
+                continue;
+            }
+
+            return selected;
         }
+    }
     
     private String checkBoardingSchedule(String origin, String destination) {
+        String[] times = {
+            "6:30 AM", "1:30 PM", "7:30 PM"
+        };
+        
+        System.out.println("\n=============================");
+        System.out.println("      BOARDING SCHEDULE     ");
+        System.out.println("=============================");
+        System.out.println("ORIGIN      : " + origin);
+        System.out.println("DESTINATION : " + destination);
 
-    String[] times = {
-        "6:30 AM", "1:30 PM", "7:30 PM"
-    };
-
-    System.out.println("\n=============================");
-    System.out.println("      BOARDING SCHEDULE     ");
-    System.out.println("=============================");
-    System.out.println("ORIGIN      : " + origin);
-    System.out.println("DESTINATION : " + destination);
-
-    for (int i = 0; i < times.length; i++) {
-        System.out.println("[" + (i + 1) + "] " + times[i]);
-    }
-
-    int choice;
-
-    while (true) {
-        System.out.print("Select time: ");
-
-        if (SC.hasNextInt()) {
-            choice = SC.nextInt();
-            SC.nextLine();
-
-            if (choice >= 1 && choice <= times.length) {
-                return times[choice - 1];
-            }
-        } else {
-            SC.next();
+        for (int i = 0; i < times.length; i++) {
+            System.out.println("[" + (i + 1) + "] " + times[i]);
         }
 
-        System.out.println("\n*INVALID INPUT! Please choose valid option.*");
+        while (true) {
+            System.out.print("Select time: ");
+
+            int choice = numberAuthenticator(1,times.length);
+
+                if (choice >= 1 && choice <= times.length) {
+                    return times[choice - 1];
+                }
+
+            System.out.println("\n*INVALID INPUT! Please choose valid option.*");
+        }
     }
-}
     
     private String getSeatLabel(int seatNumber) {
        return (seatNumber % 2 == 1) ? "LS" + seatNumber : "RS" + seatNumber;
     }
     
     private int selectSeat() {
+        
         System.out.println("\n===================");
         System.out.println("#  SEAT SELECTION #");
         System.out.println("===================");
 
         while (true) {
 
-            for (int i = 1; i <= 10; i++) {
+            for (int i = 1; i <= 20; i++) {
 
                 String label = getSeatLabel(i);
 
@@ -475,33 +380,32 @@ public class Services {
             }
 
             System.out.println("(X = Booked)");
-            System.out.print("\nEnter seat number (1-10): ");
 
-            if (SC.hasNextInt()) {
-                int seat = SC.nextInt();
-                SC.nextLine();
+            int seat = numberAuthenticator(1, 20);
 
-                if (seat < 1 || seat > 10) {
-                    System.out.println("\n*INVALID!* Choose 1–10.\n");
-                    continue;
-                }
+            if (REPO.isSeatBooked(seat)) {
+                System.out.println("\n*SEAT ALREADY BOOKED!* Kindly choose another seat.\n");
+                continue;
+            }
 
-                if (REPO.isSeatBooked(seat)) {
-                    System.out.println("\n*SEAT ALREADY BOOKED!* Kindly choose another seat.\n");
-                    continue;
-                }
+            System.out.println("Selected Seat: " + getSeatLabel(seat));
 
-                System.out.println("Selected Seat: " + getSeatLabel(seat));
+            System.out.println("\nWould you like to confirm?");
+            System.out.println("[1] Confirm");
+            System.out.println("[0] Cancel");
+
+            int choice = numberAuthenticator(0, 1);
+
+            if (choice == 1) {
                 return seat;
-
             } else {
-                System.out.println("\n*INVALID INPUT!* Numbers only.\n");
-                SC.next();
+                System.out.println("\nSelection cancelled.\n");
             }
         }
     }
     
     public void viewReservations(Passenger p){
+        
         System.out.println("\n=======================");
         System.out.println("#  YOUR RESERVATIONS  #");
         System.out.println("=======================");
@@ -535,62 +439,72 @@ public class Services {
         }
     }
     
-    private String getReservationDate() {
-        while (true) {
-            System.out.print("Date(MM-DD-YYYY): ");
-            String reservationDate = SC.nextLine();
+   private String getReservationDate(){ 
+           
+       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+       
+       while (true) {
+           System.out.print("\nEnter reservation date (MM-DD-YYYY): ");
+           String input = SC.nextLine().trim();
 
-            // basic validation
-            if (!reservationDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
-                System.out.println("*INVALID FORMAT!* Use MM-DD-YYYY.");
-                continue;
-            }
-            return reservationDate;
-        }
-    }
-    
+           try {
+               LocalDate date = LocalDate.parse(input, formatter);
+               return date.format(formatter);
+           }catch (DateTimeParseException e) {
+               System.out.println("\n*INVALID DATE!* Please enter a real date (e.g., 05-12-2026).");
+           }
+           
+           System.out.println("\nWould you like to confirm?");
+           System.out.println("[1] Confirm");
+           System.out.println("[0] Cancel");
+        
+       }
+   }
+   
     private double calculateFare(Route route, Fare fare) {
-    Map<String, Double> stationFare = new HashMap<>();
-    stationFare.put("Monumento", 25.0);
-    stationFare.put("5th Avenue", 25.0);
-    stationFare.put("R. Papa", 25.0);
-    stationFare.put("Abad Santos", 30.0);
-    stationFare.put("Blumentritt", 30.0);
+        
+        Map<String, Double> stationFare = new HashMap<>();
+        stationFare.put("Monumento", 25.0);
+        stationFare.put("5th Avenue", 25.0);
+        stationFare.put("R. Papa", 25.0);
+        stationFare.put("Abad Santos", 30.0);
+        stationFare.put("Blumentritt", 30.0);
 
-    return stationFare.get(route.getDestinationStation());
-    
-    }
+        return stationFare.get(route.getDestinationStation());
+
+        }
     
     public PaymentFramework selectPayment(double amount, double discount, Reservation r) {
+        
+        while (true) {
+            System.out.println("\n=====================");
+            System.out.println("#  ONLINE PAYMENT   #");
+            System.out.println("=====================");
+            System.out.println("[1] Gcash");
+            System.out.println("[2] Card");
+            System.out.println("[0] Back");
 
-    while (true) {
-        System.out.println("\n=====================");
-        System.out.println("#  ONLINE PAYMENT   #");
-        System.out.println("=====================");
-        System.out.println("[1] Card");
-        System.out.println("[2] GCash");
-        System.out.print("Enter choice: ");
+            int choice = numberAuthenticator(0, 2);
 
-        String input = SC.nextLine();
+            switch (choice) {
 
-        if (!input.matches("\\d+")) continue;
+                case 1:
+                    return new GCashPayment(amount, discount, r, REPO);
 
-        int choice = Integer.parseInt(input);
+                case 2:
+                    return new CardPayment(amount, discount, r, REPO);
 
-        switch (choice) {
-
-            case 1:
-                return new CardPayment(amount, discount, r, REPO);
-
-            case 2:
-                return new GCashPayment(amount, discount, r, REPO);
+                case 0:
+                    System.out.println("\nReturning to previous menu...\n");
+                    return null; 
+            }
         }
     }
-}
     
     
-   private void setupGCash(Passenger p) { // GCASH SETUP
-       String number, pin;
+  private void setupGCash(Passenger p) {
+      
+        String number, pin;
         double passengerBalance;
         double balanceLimit = 1000;
 
@@ -599,27 +513,35 @@ public class Services {
             return;
         }
 
+
         while (true) {
             System.out.print("Enter GCash Number (11 digits): ");
             number = SC.nextLine();
 
             if (!number.matches("\\d{11}")) {
                 System.out.println("*INVALID NUMBER!*");
-                continue;
+            } else {
+                break;
             }
+        }
 
+        while (true) {
             System.out.print("Create 4-digit PIN: ");
             pin = SC.nextLine();
 
             if (!pin.matches("\\d{4}")) {
                 System.out.println("*INVALID PIN!*");
-                continue;
+            } else {
+                break;
             }
+        }
 
+        while (true) {
             System.out.print("Enter balance: ");
+
             if (!SC.hasNextDouble()) {
                 System.out.println("*INVALID BALANCE INPUT!*");
-                SC.nextLine(); // clear invalid input
+                SC.nextLine();
                 continue;
             }
 
@@ -631,15 +553,14 @@ public class Services {
                 continue;
             }
 
-            break;
+            break; // valid balance
         }
 
         REPO.saveGCash(p.getFullname(), number, pin, passengerBalance);
         System.out.println("\n*GCASH SETUP SUCCESSFUL!*");
     }
-    
-    private void setupCard(Passenger p) { // CREDIT CARD SETUP
 
+    private void setupCard(Passenger p) {
         String pin;
         double passengerBalance;
         double balanceLimit = 1000;
@@ -649,29 +570,35 @@ public class Services {
             return;
         }
 
+        
         while (true) {
             System.out.print("Create 4-digit Card PIN: ");
             pin = SC.nextLine();
 
             if (!pin.matches("\\d{4}")) {
                 System.out.println("*INVALID PIN! Please try again.*");
+            } else {
+                break;
+            }
+        }
+
+        while (true) {
+            System.out.print("Enter card balance: ");
+
+            if (!SC.hasNextDouble()) {
+                System.out.println("*INVALID BALANCE INPUT!*");
+                SC.nextLine();
                 continue;
             }
 
-            System.out.print("Enter card balance: ");
-            if (!SC.hasNextDouble()) {
-                System.out.println("*INVALID BALANCE INPUT!*");
-                SC.nextLine(); // clear invalid input
-                continue;
-            }
-            
             passengerBalance = SC.nextDouble();
             SC.nextLine();
-            
+
             if (passengerBalance > balanceLimit) {
                 System.out.println("*BALANCE EXCEEDS LIMIT (P1000)!*");
                 continue;
             }
+
             break;
         }
 
@@ -740,20 +667,31 @@ public class Services {
                 .setTotalFare(finalTotal)
                 .setPaymentType(payment.getClass().getSimpleName())
                 .build();
-          
-          System.out.println("\nPlease select an action");
-          System.out.println("[1] Confirm \n[0] Cancel ");
-          System.out.print("Enter a choice: ");
 
-          int choice = SC.nextInt();
-          SC.nextLine();
-
-          if (choice == 1) {
               r.reservationConfirmed();
               REPO.saveReservation(r);
-          }else {
-              System.out.println("\n*RESERVATION SUCCESSFULLY CANCELLED!*");
-          }
+        
+    }
+    
+     public int numberAuthenticator(int min, int max) {
+        while (true) {
+            System.out.print("Enter choice (" + min + "-" + max + "): ");
+
+            if (SC.hasNextInt()) {
+                int choice = SC.nextInt();
+                SC.nextLine(); // clear buffer
+
+                if (choice >= min && choice <= max) {
+                    return choice;
+                } else {
+                    System.out.println("\n*INVALID!* Choose between " + min + " and " + max + ".\n");
+                }
+
+            } else {
+                System.out.println("\n*INVALID INPUT!* Numbers only.\n");
+                SC.next(); // discard invalid input
+            }
+        }
     }
     
     public static class ServicesBuilder {
