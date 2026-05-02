@@ -154,7 +154,6 @@ public class Services {
         }
         System.out.println("==========================================================================================");
         
-        System.out.print("\nEnter reservation number to delete: ");
         int choice = numberAuthenticator(1, reservations.size());
 
         String[] selected = reservations.get(choice - 1);
