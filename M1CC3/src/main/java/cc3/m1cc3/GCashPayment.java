@@ -11,51 +11,82 @@ public class GCashPayment extends PaymentFramework {
     @Override
     public boolean validatePayment(double finalAmount) {
 
-        String fullname = reservation.getPassenger().getFullname();
-        String storedPin = REPO.getGCashPin(fullname);
+    String fullname = reservation.getPassenger().getFullname();
+    String storedPin = REPO.getGCashPin(fullname);
 
-        if (storedPin == null) {
-            System.out.println("No GCash account found.");
-            return false;
-        }
-
-        int attempts = 3;
-
-        while (attempts > 0) {
-
-            System.out.print("Enter GCash PIN: ");
-            String input = new java.util.Scanner(System.in).nextLine();
-
-            if (!input.matches("\\d{4}")) {
-                System.out.println("*INVALID INPUT!*");
-                continue;
-            }
-
-            if (!input.equals(storedPin)) {
-                attempts--;
-                System.out.println("Incorrect PIN. Attempts left: " + attempts);
-                continue;
-            }
-
-            double currentBalance = REPO.getGCashBalance(fullname);
-
-            System.out.println("\nCurrent Balance: " + currentBalance);
-
-            if (currentBalance < finalAmount) {
-                System.out.println("Insufficient balance.");
-                return false;
-            }
-
-            updatedBalance = currentBalance - finalAmount;
-
-            REPO.updateGCashBalance(fullname, updatedBalance);
-
-            System.out.println("GCash Payment Successful!");
-            return true;
-        }
-
+    if (storedPin == null) {
+        System.out.println("No GCash account found.");
         return false;
     }
+
+    java.util.Scanner scanner = new java.util.Scanner(System.in);
+    
+    int attempts = 3;
+    boolean authenticated = false;
+
+    while (attempts > 0) {
+
+        System.out.print("Enter GCash PIN: ");
+        String input = scanner.nextLine();
+
+        if (!input.matches("\\d{4}")) {
+            System.out.println("*INVALID INPUT! 4-digit PIN only*");
+            continue;
+        }
+
+        if (input.equals(storedPin)) {
+            authenticated = true;
+            break;
+        } else {
+            attempts--;
+            System.out.println("Incorrect PIN. Attempts left: " + attempts);
+        }
+    }
+
+    if (!authenticated) {
+        return false;
+    }
+
+    double currentBalance = REPO.getGCashBalance(fullname);
+    System.out.println("\nCurrent Balance: " + currentBalance);
+
+    // =========================
+    // 3. PAYMENT SUMMARY
+    // =========================
+    System.out.println("\n===== PAYMENT SUMMARY =====");
+    System.out.printf("Base Fare       : P%.2f%n", amount);
+    System.out.printf("VAT (12%%)       : P%.2f%n", amount * VATRATE);
+    System.out.printf("Discount        : P%.2f%n", discount);
+    System.out.println("---------------------------");
+    System.out.printf("Final Total     : P%.2f%n", finalAmount);
+
+    double remainingBalance = currentBalance - finalAmount;
+    System.out.println("--------------------------");
+
+    System.out.println("Confirm payment?");
+    System.out.println("[1] Confirm");
+    System.out.println("[0] Cancel");
+
+    System.out.print("Enter choice: ");
+    String choice = scanner.nextLine();
+    
+    if (!choice.equals("1")) {
+        System.out.println("Payment cancelled.");
+        return false;
+    }
+
+    if (currentBalance < finalAmount) {
+        System.out.println("Insufficient balance.");
+        return false;
+    }
+    
+    REPO.updateGCashBalance(fullname, remainingBalance);
+
+    System.out.println("\nGCash Payment Successful!");
+    System.out.println("Remaining Balance: " + remainingBalance);
+     
+    return true;
+}
 
     @Override
     public void displayRemaining() {
