@@ -60,8 +60,8 @@ public class Repository {
        }
    }
    
-   public void saveGCash(String fullName, String contactNumber, String pin) {
-       String sql = "INSERT INTO tbl_gcashPayment(fullName, contactNumber, pin) VALUES (?, ?, ?)";
+   public void saveGCash(String fullName, String contactNumber, String pin, double passengerBalance) {
+       String sql = "INSERT INTO tbl_gcashPayment(fullName, contactNumber, pin, passengerBalance) VALUES (?, ?, ?, ?)";
        
        try (Connection conn = DriverManager.getConnection(DBURL);
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -69,6 +69,7 @@ public class Repository {
          pstmt.setString(1, fullName);
          pstmt.setString(2, contactNumber);
          pstmt.setString(3, pin);
+         pstmt.setDouble(4, passengerBalance);
 
          pstmt.executeUpdate();
 
@@ -96,15 +97,52 @@ public class Repository {
 
     return null;
 }
+   public double getGCashBalance(String fullname) {
+
+    String sql = "SELECT passengerBalance FROM tbl_gcashPayment WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, fullname);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getDouble("passengerBalance");
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+   public void updateGCashBalance(String fullname, double passengerBalance) {
+
+    String sql = "UPDATE tbl_gcashPayment SET passengerBalance = ? WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setDouble(1, passengerBalance);
+        pstmt.setString(2, fullname);
+
+        pstmt.executeUpdate();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
    
-   public void saveCard(String fullName, String pin) {
-       String sql = "INSERT INTO tbl_cardPayment(fullName, pin) VALUES (?, ?)";
+   public void saveCard(String fullName, String pin, double passengerBalance) {
+       String sql = "INSERT INTO tbl_cardPayment(fullName, pin, passengerBalance) VALUES (?, ?, ?)";
        
        try (Connection conn = DriverManager.getConnection(DBURL);
             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, fullName);
             pstmt.setString(2, pin);
+            pstmt.setDouble(3, passengerBalance);
 
             pstmt.executeUpdate();
 
@@ -131,6 +169,42 @@ public class Repository {
     }
 
     return null;
+}
+   public double getCardCredit(String fullname) {
+
+    String sql = "SELECT passengerBalance FROM tbl_cardPayment WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, fullname);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getDouble("passengerBalance");
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+   public void updateCardCredit(String fullname, double passengerBalance) {
+
+    String sql = "UPDATE tbl_cardPayment SET passengerBalance = ? WHERE fullname = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setDouble(1, passengerBalance);
+        pstmt.setString(2, fullname);
+
+        pstmt.executeUpdate();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
 }
    
    public boolean hasGCash(String fullname) {
@@ -181,7 +255,7 @@ public class Repository {
         int rows = pstmt.executeUpdate();
 
         if (rows > 0) {
-            System.out.println("Reservation cancelled successfully.");
+            System.out.println("\nReservation cancelled successfully.");
         } else {
             System.out.println("Reservation not found.");
         }
