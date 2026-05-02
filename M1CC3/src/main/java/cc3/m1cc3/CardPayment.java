@@ -15,46 +15,78 @@ public class CardPayment extends PaymentFramework {
         String storedPin = REPO.getCardPin(fullname);
 
         if (storedPin == null) {
-            System.out.println("No Card found.");
+            System.out.println("No Card account found.");
             return false;
         }
 
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+
         int attempts = 3;
+        boolean authenticated = false;
 
         while (attempts > 0) {
 
             System.out.print("Enter Card PIN: ");
-            String input = new java.util.Scanner(System.in).nextLine();
+            String input = scanner.nextLine();
 
             if (!input.matches("\\d{4}")) {
-                System.out.println("*INVALID INPUT!*");
+                System.out.println("*INVALID INPUT! 4-digit PIN only*");
                 continue;
             }
 
-            if (!input.equals(storedPin)) {
+            if (input.equals(storedPin)) {
+                authenticated = true;
+                break;
+            } else {
                 attempts--;
                 System.out.println("Incorrect PIN. Attempts left: " + attempts);
-                continue;
             }
-
-            double credit = REPO.getCardCredit(fullname);
-
-            System.out.println("\nAvailable Credit: " + credit);
-
-            if (credit < finalAmount) {
-                System.out.println("Insufficient credit.");
-                return false;
-            }
-
-            updatedCredit = credit - finalAmount;
-
-            REPO.updateCardCredit(fullname, updatedCredit);
-
-            System.out.println("Card Payment Successful!");
-            return true;
         }
 
-        return false;
+        if (!authenticated) {
+            return false;
+        }
+
+        double currentCredit = REPO.getCardCredit(fullname);
+        System.out.println("\nAvailable Credit: " + currentCredit);
+
+        // =========================
+        // PAYMENT SUMMARY
+        // =========================
+        System.out.println("\n===== PAYMENT SUMMARY =====");
+        System.out.printf("Base Fare       : P%.2f%n", amount);
+        System.out.printf("VAT (12%%)       : P%.2f%n", amount * VATRATE);
+        System.out.printf("Discount        : P%.2f%n", discount);
+        System.out.println("---------------------------");
+        System.out.printf("Final Total     : P%.2f%n", finalAmount);
+
+        double remainingCredit = currentCredit - finalAmount;
+        System.out.println("--------------------------");
+
+        System.out.println("Confirm payment?");
+        System.out.println("[1] Confirm");
+        System.out.println("[0] Cancel");
+
+        System.out.print("Enter choice: ");
+        String choice = scanner.nextLine();
+
+        if (!choice.equals("1")) {
+            System.out.println("Payment cancelled.");
+            return false;
+        }
+
+        if (currentCredit < finalAmount) {
+            System.out.println("Insufficient credit.");
+            return false;
+        }
+
+        updatedCredit = remainingCredit;
+        REPO.updateCardCredit(fullname, updatedCredit);
+
+        System.out.println("\nCard Payment Successful!");
+        System.out.println("Remaining Credit: " + updatedCredit);
+
+        return true;
     }
 
     @Override
