@@ -1,4 +1,3 @@
-package m1.m11;
 import java.util.Scanner;
 
 public class Main {
@@ -22,21 +21,8 @@ public class Main {
             System.out.println("[1] Register");
             System.out.println("[2] Login");
             System.out.println("[0] Exit");
-            System.out.print("Enter choice: ");
-
-            if (!sc.hasNextInt()) {
-                System.out.println("\n*INVALID INPUT!* Please enter a number only.");
-                sc.next(); // clear invalid input
-                continue;
-            }
-
-            int choice = sc.nextInt();
-            sc.nextLine();
-
-            if (choice < 0 || choice > 2) {
-                System.out.println("\n*INVALID INPUT!* Please select a valid option.");
-                continue;
-            }
+            
+            int choice = service.numberAuthenticator(0,2);
 
             switch (choice) {
                 case 1 -> service.registerPassenger();
@@ -56,26 +42,15 @@ public class Main {
                         System.out.println("[4] Setup Payment");
                         System.out.println("[0] Logout");
                         System.out.print("Enter choice: ");
-
-                        if (!sc.hasNextInt()) {
-                            System.out.println("\n*INVALID INPUT!* Please enter a number only.");
-                            sc.next();
-                            continue;
-                        }
-
-                        int status = sc.nextInt();
-                        sc.nextLine();
-
-                        if (status < 0 || status > 4) {
-                            System.out.println("\n*INVALID INPUT!* Please select a valid option.");
-                            continue;
-                        }
+                        
+                        int status = service.numberAuthenticator(0,4);
 
                         switch (status) {
                             case 1 -> service.viewReservations(p);
                             case 2 -> service.reservePassenger(p);
                             case 3 -> service.cancelReservation(p);
                             case 4 -> service.setupPayment(p);
+                      
                             case 0 -> {
                                 System.out.println("\n*SUCCESS!* Logging out...");
                                 break dashboard;
