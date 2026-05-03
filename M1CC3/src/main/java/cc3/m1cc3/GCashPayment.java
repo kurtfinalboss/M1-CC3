@@ -1,3 +1,5 @@
+package m1.m11;
+
 public class GCashPayment extends PaymentFramework {
 
     private double updatedBalance;
@@ -49,10 +51,7 @@ public class GCashPayment extends PaymentFramework {
 
     double currentBalance = REPO.getGCashBalance(fullname);
     System.out.println("\nCurrent Balance: " + currentBalance);
-
-    // =========================
-    // 3. PAYMENT SUMMARY
-    // =========================
+    
     System.out.println("\n===== PAYMENT SUMMARY =====");
     System.out.printf("Base Fare       : P%.2f%n", amount);
     System.out.printf("VAT (12%%)       : P%.2f%n", amount * VATRATE);
