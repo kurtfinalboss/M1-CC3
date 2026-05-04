@@ -36,20 +36,44 @@ public class Main {
                         System.out.println("\n===============");
                         System.out.println("#  DASHBOARD  #");
                         System.out.println("===============");
-                        System.out.println("[1] View Reservation Summary");
-                        System.out.println("[2] Reserve");
+                        System.out.println("[1] Reserve");
+                        System.out.println("[2] View Reservation Summary");
                         System.out.println("[3] Cancel Reservation");
-                        System.out.println("[4] Setup Payment");
+                        System.out.println("[4] Payments & Transactions");
                         System.out.println("[0] Logout");
-                        System.out.print("Enter choice: ");
                         
                         int status = service.numberAuthenticator(0,4);
 
                         switch (status) {
-                            case 1 -> service.viewReservations(p);
-                            case 2 -> service.reservePassenger(p);
+                            case 1 -> service.reservePassenger(p);
+                            case 2 -> service.viewReservations(p);
                             case 3 -> service.cancelReservation(p);
-                            case 4 -> service.setupPayment(p);
+                            case 4 -> {
+                                
+                                boolean running = true;
+
+                                while (running) {
+
+                                System.out.println("\n=============================");
+                                System.out.println("#  PAYMENTS & TRANSACTIONS  #");
+                                System.out.println("=============================");
+                                System.out.println("[1] Set Up Payment");
+                                System.out.println("[2] View Transaction History");
+                                System.out.println("[0] Back");
+
+                                int confirm = service.numberAuthenticator(0,2);
+
+                                switch(confirm){
+                                    case 1 -> service.setupPayment(p);
+                                    case 2 -> service.viewTransactions(p);
+                                    case 0 -> {
+                                        System.out.println("\nReturning to dashboard...");
+                                        running = false;
+                                        }
+                                        default -> System.out.println("\n*INVALID INPUT!*");
+                                    }
+                                }
+                            }
                       
                             case 0 -> {
                                 System.out.println("\n*SUCCESS!* Logging out...");
