@@ -1,3 +1,5 @@
+package m1.m11;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -193,13 +195,23 @@ public class Services {
         }
 
         // Parse payment amount
-        double paymentAmount = 0.0;
+        double paymentAmount;
+
         try {
-            paymentAmount = Double.parseDouble(selected[9]);
+            paymentAmount = Double.parseDouble(selected[9].trim());
         } catch (NumberFormatException e) {
             System.out.println("ERROR: Invalid payment amount. Cannot process refund.");
             return;
         }
+
+        double cancellationFee = paymentAmount * 0.10;
+        double refundAmount = paymentAmount - cancellationFee;
+
+        System.out.println("\n===== CANCELLATION SUMMARY =====");
+        System.out.printf("%-20s : P%.2f%n", "Paid Amount", paymentAmount);
+        System.out.printf("%-20s : P%.2f%n", "Cancellation Fee (10%)", cancellationFee);
+        System.out.println("--------------------------------");
+        System.out.printf("%-20s : P%.2f%n", "Refund Amount", refundAmount);
 
             if (selected.length > 10) {
                 paymentType = selected[10];
@@ -216,7 +228,7 @@ public class Services {
             case "gcash":
                 if (REPO.hasGCash(p.getFullname())) {
                     double currentBalance = REPO.getGCashBalance(p.getFullname());
-                    REPO.updateGCashBalance(p.getFullname(), currentBalance + paymentAmount);
+                   REPO.updateGCashBalance(p.getFullname(), currentBalance + refundAmount);
                     refunded = true;
                 } else {
                     System.out.println("ERROR: No GCash account found for refund.");
@@ -226,7 +238,7 @@ public class Services {
             case "card":
                 if (REPO.hasCard(p.getFullname())) {
                     double currentCredit = REPO.getCardCredit(p.getFullname());
-                    REPO.updateCardCredit(p.getFullname(), currentCredit + paymentAmount);
+                    REPO.updateCardCredit(p.getFullname(), currentCredit + refundAmount);
                     refunded = true;
                 } else {
                     System.out.println("ERROR: No Card account found for refund.");
@@ -240,7 +252,7 @@ public class Services {
         if (refunded) {
             REPO.deleteReservation(selected[0]);
             System.out.println("\n*RESERVATION CANCELLED SUCCESSFULLY!*");
-            System.out.printf("Refund of P%.2f credited to %s account.\n", paymentAmount, paymentType);
+            System.out.printf("Refund of P%.2f credited to %s account.\n", refundAmount, paymentType);
         } else {
             System.out.println("Refund failed. Reservation not cancelled.");
         }
@@ -804,6 +816,28 @@ public class Services {
     System.out.println("\n*CARD SETUP SUCCESSFUL!*");
 }
     
+    public void viewIncomeStatement() {
+
+    System.out.println("\n===========================");
+    System.out.println("#    INCOME STATEMENT     #");
+    System.out.println("===========================");
+
+    int totalTransactions = REPO.getTransactionCount();
+    double totalRevenue = REPO.getTotalRevenue();
+
+    double gcashRevenue = REPO.getRevenueByType("GCash");
+    double cardRevenue = REPO.getRevenueByType("Card");
+
+    System.out.println("Total Transactions : " + totalTransactions);
+    System.out.println("Total Revenue      : P" + String.format("%.2f", totalRevenue));
+
+    System.out.println("\n--- Breakdown ---");
+    System.out.println("GCash             : P" + String.format("%.2f", gcashRevenue));
+    System.out.println("Card              : P" + String.format("%.2f", cardRevenue));
+
+    System.out.println("===========================");
+}
+    
     public void reservePassenger(Passenger p) {
 
     List<String[]> reservations = REPO.getReservations(p.getFullname());
@@ -927,4 +961,3 @@ public class Services {
         }
     }
 }
-
