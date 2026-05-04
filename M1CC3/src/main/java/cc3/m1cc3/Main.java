@@ -85,9 +85,45 @@ public class Main {
                 }
             }
                 
-                case 3 -> {
-                    service.viewIncomeStatement();
+               case 3 -> {
+
+                    boolean loggedIn = service.adminLogin();
+
+                    if (!loggedIn) {
+                        System.out.println("\nReturning to Train Hub...");
+                        break; 
+                    }
+
+                    boolean running = true;
+
+                    while (running) {
+
+                        System.out.println("\n=============================");
+                        System.out.println("#     ADMIN DASHBOARD       #");
+                        System.out.println("=============================");
+                        System.out.println("[1] Income Statement");
+                        System.out.println("[0] Logout");
+
+                        int check = service.numberAuthenticator(0, 1);
+
+                        switch (check) {
+
+                            case 1 -> {
+                                service.viewIncomeStatement();
+                                System.out.println("\nPress Enter to return...");
+                                sc.nextLine();
+                            }
+
+                            case 0 -> {
+                                System.out.println("\nLogging out...");
+                                running = false;
+                            }
+
+                            default -> System.out.println("\n*INVALID INPUT!*");
+                        }
+                    }
                 }
+                
                 case 0 -> {
                     System.out.println("\nTHANK YOU FOR USING OUR SYSTEM!");
                     return;
