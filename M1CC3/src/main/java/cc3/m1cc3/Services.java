@@ -16,6 +16,34 @@ public class Services {
         this.SC = builder.sc;
         this.REPO = builder.repo;
     }
+
+     public boolean adminLogin() {
+        int attempts = 3;
+
+        while (attempts > 0) {
+
+            System.out.print("Username: ");
+            String username = SC.nextLine();
+
+            System.out.print("Password: ");
+            String password = SC.nextLine();
+
+            if (REPO.validateAdmin(username, password)) {
+                System.out.println("\n*ADMIN LOGIN SUCCESSFUL*");
+                return true;
+            } else {
+                attempts--;
+                System.out.println("\n*INVALID ADMIN CREDENTIALS*");
+
+                if (attempts > 0) {
+                    System.out.println("Attempts remaining: " + attempts);
+                }
+            }
+        }
+
+        System.out.println("\n*ACCESS DENIED!* Too many failed attempts.");
+        return false;
+    }
     
     public Passenger registerPassenger() {
     String name = "", pass = "", contact = "", emailAddress = "";
