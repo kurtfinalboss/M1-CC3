@@ -49,33 +49,8 @@ public class GCashPayment extends PaymentFramework {
     
     double discountPercent = (amount == 0) ? 0 : (discount / amount) * 100;
     double currentBalance = REPO.getGCashBalance(fullname);
-    System.out.println("\nCurrent Balance: " + currentBalance);
-    
-    System.out.println("\n===== PAYMENT SUMMARY =====");
-
-    System.out.printf("%-18s : P%.2f%n", "Base Fare", amount);
-    System.out.printf("%-18s : P%.2f%n", "VAT (12%)", amount * VATRATE);
-    System.out.printf("%-18s : P%.2f%n", 
-            String.format("Discount (%.2f%%)", discountPercent), discount);
-
-    System.out.println("----------------------------");
-
-    System.out.printf("%-18s : P%.2f%n", "Final Total", finalAmount);
 
     double remainingBalance = currentBalance - finalAmount;
-    System.out.println("--------------------------");
-
-    System.out.println("\nConfirm payment?");
-    System.out.println("[1] Confirm");
-    System.out.println("[0] Cancel");
-
-    System.out.print("Enter choice: ");
-    String choice = scanner.nextLine();
-    
-    if (!choice.equals("1")) {
-        System.out.println("Payment cancelled.");
-        return false;
-    }
 
     if (currentBalance < finalAmount) {
         System.out.println("Insufficient balance.");
