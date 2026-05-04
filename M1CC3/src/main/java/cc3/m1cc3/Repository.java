@@ -17,6 +17,62 @@ public class Repository {
         this.DBURL = dbURL;
     }
     
+   public void saveTransaction(String referenceCode, String fullname, String paymentType, double paymentAmount, 
+                                String reservationDate,String originStation, String destinationStation) {
+
+    String sql = "INSERT INTO tbl_transaction(" +
+            "referenceCode, fullName, paymentType, paymentAmount, reservationDate, originStation, destinationStation) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, referenceCode);
+        pstmt.setString(2, fullname);
+        pstmt.setString(3, paymentType);
+        pstmt.setDouble(4, paymentAmount);
+        pstmt.setString(5, reservationDate);
+        pstmt.setString(6, originStation);
+        pstmt.setString(7, destinationStation);
+
+        pstmt.executeUpdate();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+   
+   public List<String[]> getTransactions(String fullname) {
+
+    List<String[]> list = new ArrayList<>();
+
+    String sql = "SELECT * FROM tbl_transaction WHERE fullName = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, fullname);
+
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            list.add(new String[] {
+                rs.getString("referenceCode"),
+                rs.getString("fullName"),
+                rs.getString("paymentType"),
+                String.valueOf(rs.getDouble("paymentAmount")),
+                rs.getString("reservationDate"),
+                rs.getString("originStation"),
+                rs.getString("destinationStation"),
+            });
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
    
    public void savePassenger(Passenger p) {
         String sql = "INSERT INTO tbl_passenger(fullname, password, contactNumber, emailAddress) VALUES (?, ?, ?, ?)";
@@ -39,26 +95,34 @@ public class Repository {
    }
    
    public void saveReservation(Reservation r) {
-       String sql = "INSERT INTO tbl_reservation(reservationCode, fullname, passengerCategory, discountRate, originStation, destinationStation, departureTime, reservationDate, seatNumber, totalFare) VALUES (?,?,?,?,?,?,?,?,?,?)";
-       try (Connection conn = DriverManager.getConnection(DBURL);
-               PreparedStatement ps = conn.prepareStatement(sql)) {
-           
-           ps.setString(1, r.getReservationCode());
-           ps.setString(2, r.getPassenger().getFullname());
-           ps.setString(3, r.getFare().getPassengerCategory());
-           ps.setDouble(4, r.getFare().getDiscountRate());
-           ps.setString(5, r.getRoute().getOriginStation());
-           ps.setString(6, r.getRoute().getDestinationStation());
-           ps.setString(7, r.getRoute().getDepartureTime());
-           ps.setString(8, r.getRoute().getReservationDate());
-           ps.setInt(9, r.getSeatNumber());
-           ps.setDouble(10, r.getTotalFare());
-           
-           ps.executeUpdate();
-       } catch (Exception e) {
-           System.out.println(e.getMessage());
-       }
-   }
+
+    String sql = "INSERT INTO tbl_reservation(" +
+            "reservationCode, fullname, passengerCategory, discountRate, " +
+            "originStation, destinationStation, departureTime, reservationDate, " +
+            "seatNumber, totalFare, paymentType) " +
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, r.getReservationCode());
+        ps.setString(2, r.getPassenger().getFullname());
+        ps.setString(3, r.getFare().getPassengerCategory());
+        ps.setDouble(4, r.getFare().getDiscountRate());
+        ps.setString(5, r.getRoute().getOriginStation());
+        ps.setString(6, r.getRoute().getDestinationStation());
+        ps.setString(7, r.getRoute().getDepartureTime());
+        ps.setString(8, r.getRoute().getReservationDate());
+        ps.setInt(9, r.getSeatNumber());
+        ps.setDouble(10, r.getTotalFare());
+        ps.setString(11, r.getPaymentType());
+
+        ps.executeUpdate();
+
+    } catch (Exception e) {
+        System.out.println(e.getMessage());
+    }
+}
    
    public void saveGCash(String fullName, String contactNumber, String pin, double passengerBalance) {
        String sql = "INSERT INTO tbl_gcashPayment(fullName, contactNumber, pin, passengerBalance) VALUES (?, ?, ?, ?)";
@@ -255,7 +319,6 @@ public class Repository {
         int rows = pstmt.executeUpdate();
 
         if (rows > 0) {
-            System.out.println("\nReservation cancelled successfully.");
         } else {
             System.out.println("Reservation not found.");
         }
@@ -288,7 +351,8 @@ public class Repository {
                     rs.getString("departureTime"),//6
                     rs.getString("reservationDate"),//7
                     String.valueOf(rs.getInt("seatNumber")),//8
-                    String.valueOf(rs.getDouble("totalFare")),//9 
+                    String.valueOf(rs.getDouble("totalFare")),//9
+                    rs.getString("paymentType"), //10
             };
                 list.add(data);
             }
@@ -319,7 +383,7 @@ public class Repository {
                         .setEmailAddress(rs.getString("emailAddress"))
                         .build();
             }
-
+            
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -388,7 +452,7 @@ public class Repository {
             ps.setInt(1, seat);
             ResultSet rs = ps.executeQuery();
 
-            return rs.next(); // true if exists
+            return rs.next();
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -396,6 +460,22 @@ public class Repository {
 
         return false;
     }
+   
+   public void savePaymentType(String reservationCode, String paymentType) {
+    String sql = "UPDATE tbl_reservation SET paymentType = ? WHERE reservationCode = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, paymentType);
+        ps.setString(2, reservationCode);
+
+        ps.executeUpdate();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
    
    public static class RepositoryBuilder{
         private String path;
