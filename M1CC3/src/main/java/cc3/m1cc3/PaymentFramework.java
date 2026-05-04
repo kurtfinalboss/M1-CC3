@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public abstract class PaymentFramework {
 
     protected double amount;
@@ -10,7 +12,7 @@ public abstract class PaymentFramework {
         this.discount = discount;
         this.reservation = reservation;
     }
-
+    
     public abstract boolean validatePayment(double finalAmount);
 
     public double applyVAT(double amount) {
@@ -22,7 +24,6 @@ public abstract class PaymentFramework {
     }
 
     public double processInvoice() {
-
         System.out.println("\nProcessing invoice...");
 
         double total = applyVAT(amount);
@@ -36,24 +37,14 @@ public abstract class PaymentFramework {
         finalizeTransaction(total);
         return total;
     }
-
     public void finalizeTransaction(double finalAmount) {
-
-        System.out.println("\n===== PAYMENT SUMMARY =====");
-        System.out.printf("Base Fare       : P%.2f%n", amount);
-        System.out.printf("VAT (12%%)       : P%.2f%n", amount * VATRATE);
-        System.out.printf("Discount        : P%.2f%n", discount);
-        System.out.println("---------------------------");
-        System.out.printf("Final Total     : P%.2f%n", finalAmount);
-
-        displayRemaining();
-
+        
         System.out.println("\n===== TRANSACTION RECEIPT =====");
-        System.out.println("Payment Method  : " + getPaymentType());
+        System.out.println("Payment Type  : " + getPaymentType());
         System.out.println("Status          : SUCCESS");
         System.out.println("================================");
     }
-    
+//TITE
     public abstract void displayRemaining();
 
     public abstract String getPaymentType();
