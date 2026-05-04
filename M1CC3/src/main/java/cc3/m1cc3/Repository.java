@@ -460,6 +460,25 @@ public class Repository {
 
         return false;
     }
+
+    public boolean validateAdmin(String username, String password) {
+    String query = "SELECT * FROM tbl_admin WHERE username = ? AND password = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement stmt = conn.prepareStatement(query)) {
+
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+
+        ResultSet rs = stmt.executeQuery();
+
+        return rs.next(); // true if match found
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
    
    public void savePaymentType(String reservationCode, String paymentType) {
     String sql = "UPDATE tbl_reservation SET paymentType = ? WHERE reservationCode = ?";
