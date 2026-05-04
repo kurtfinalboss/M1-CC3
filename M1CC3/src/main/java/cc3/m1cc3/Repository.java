@@ -391,7 +391,7 @@ public class Repository {
     }
    
    public static String passengerExists(String name, String password , String contact, String emailAddress){
-        String url = "jdbc:sqlite:D:\\TrainHubStation.db";
+        String url = "jdbc:sqlite:C:\\Users\\User\\Downloads\\TrainHubStation.db";
 
         boolean nameExists = false;
         boolean passExists = false;
@@ -477,11 +477,119 @@ public class Repository {
     }
 }
    
+   public double getGrossRevenue() {
+
+    String sql = "SELECT SUM(paymentAmount) FROM tbl_transaction";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+
+        if (rs.next()) return rs.getDouble(1);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+   
+   public double getTotalVAT() {
+
+    String sql = "SELECT SUM(paymentAmount * 0.12) FROM tbl_transaction";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+
+        if (rs.next()) return rs.getDouble(1);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+    
+public int getTransactionCount() {
+
+    String sql = "SELECT COUNT(*) FROM tbl_transaction";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+
+public double getRevenueByType(String type) {
+
+    String sql = "SELECT SUM(paymentAmount) FROM tbl_transaction WHERE paymentType = ?";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, type);
+
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getDouble(1);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+
+public double getTotalRevenue() {
+
+    String sql = "SELECT SUM(paymentAmount) FROM tbl_transaction";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+
+        if (rs.next()) {
+            return rs.getDouble(1);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+
+public double getNetRevenue() {
+
+    String sql = "SELECT SUM(paymentAmount - (paymentAmount * 0.12)) FROM tbl_transaction";
+
+    try (Connection conn = DriverManager.getConnection(DBURL);
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+
+        if (rs.next()) return rs.getDouble(1);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
    public static class RepositoryBuilder{
         private String path;
         
         public RepositoryBuilder setDatabasePath(){
-            this.path = "jdbc:sqlite:D:\\TrainHubStation.db";
+            this.path = "jdbc:sqlite:C:\\Users\\User\\Downloads\\TrainHubStation.db";
             return this;
         }
         public Repository build() {
