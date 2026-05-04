@@ -460,7 +460,6 @@ public class Repository {
 
         return false;
     }
-
     public boolean validateAdmin(String username, String password) {
     String query = "SELECT * FROM tbl_admin WHERE username = ? AND password = ?";
 
@@ -527,8 +526,8 @@ public class Repository {
     }
     return 0;
 }
-    
-public int getTransactionCount() {
+   
+   public int getTransactionCount() {
 
     String sql = "SELECT COUNT(*) FROM tbl_transaction";
 
@@ -546,8 +545,8 @@ public int getTransactionCount() {
 
     return 0;
 }
-
-public double getRevenueByType(String type) {
+   
+   public double getRevenueByType(String type) {
 
     String sql = "SELECT SUM(paymentAmount) FROM tbl_transaction WHERE paymentType = ?";
 
@@ -568,8 +567,8 @@ public double getRevenueByType(String type) {
 
     return 0;
 }
-
-public double getTotalRevenue() {
+   
+   public double getTotalRevenue() {
 
     String sql = "SELECT SUM(paymentAmount) FROM tbl_transaction";
 
@@ -587,8 +586,8 @@ public double getTotalRevenue() {
 
     return 0;
 }
-
-public double getNetRevenue() {
+   
+   public double getNetRevenue() {
 
     String sql = "SELECT SUM(paymentAmount - (paymentAmount * 0.12)) FROM tbl_transaction";
 
@@ -604,6 +603,8 @@ public double getNetRevenue() {
 
     return 0;
 }
+
+  
    public static class RepositoryBuilder{
         private String path;
         
