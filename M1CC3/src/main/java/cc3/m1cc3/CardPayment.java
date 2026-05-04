@@ -1,3 +1,5 @@
+package m1.m11;
+
 public class CardPayment extends PaymentFramework {
 
     private double updatedCredit;
@@ -51,35 +53,8 @@ public class CardPayment extends PaymentFramework {
         double currentCredit = REPO.getCardCredit(fullname);
         System.out.println("\nAvailable Credit: " + currentCredit);
 
-        // =========================
-        // PAYMENT SUMMARY
-        // =========================
-        System.out.println("\n===== PAYMENT SUMMARY =====");
-
-        System.out.printf("%-18s : P%.2f%n", "Base Fare", amount);
-        System.out.printf("%-18s : P%.2f%n", "VAT (12%)", amount * VATRATE);
-        System.out.printf("%-18s : P%.2f%n", 
-                String.format("Discount (%.2f%%)", discountPercent), discount);
-
-        System.out.println("----------------------------");
-
-        System.out.printf("%-18s : P%.2f%n", "Final Total", finalAmount);
-
         double remainingCredit = currentCredit - finalAmount;
-        System.out.println("--------------------------");
-
-        System.out.println("\nConfirm payment?");
-        System.out.println("[1] Confirm");
-        System.out.println("[0] Cancel");
-
-        System.out.print("Enter choice: ");
-        String choice = scanner.nextLine();
-
-        if (!choice.equals("1")) {
-            System.out.println("Payment cancelled.");
-            return false;
-        }
-
+       
         if (currentCredit < finalAmount) {
             System.out.println("Insufficient credit.");
             return false;
