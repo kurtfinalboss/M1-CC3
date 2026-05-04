@@ -1,5 +1,3 @@
-package m1.m11;
-
 public class CardPayment extends PaymentFramework {
 
     private double updatedCredit;
@@ -48,7 +46,8 @@ public class CardPayment extends PaymentFramework {
         if (!authenticated) {
             return false;
         }
-
+        
+        double discountPercent = (amount == 0) ? 0 : (discount / amount) * 100;
         double currentCredit = REPO.getCardCredit(fullname);
         System.out.println("\nAvailable Credit: " + currentCredit);
 
@@ -56,16 +55,20 @@ public class CardPayment extends PaymentFramework {
         // PAYMENT SUMMARY
         // =========================
         System.out.println("\n===== PAYMENT SUMMARY =====");
-        System.out.printf("Base Fare       : P%.2f%n", amount);
-        System.out.printf("VAT (12%%)       : P%.2f%n", amount * VATRATE);
-        System.out.printf("Discount        : P%.2f%n", discount);
-        System.out.println("---------------------------");
-        System.out.printf("Final Total     : P%.2f%n", finalAmount);
+
+        System.out.printf("%-18s : P%.2f%n", "Base Fare", amount);
+        System.out.printf("%-18s : P%.2f%n", "VAT (12%)", amount * VATRATE);
+        System.out.printf("%-18s : P%.2f%n", 
+                String.format("Discount (%.2f%%)", discountPercent), discount);
+
+        System.out.println("----------------------------");
+
+        System.out.printf("%-18s : P%.2f%n", "Final Total", finalAmount);
 
         double remainingCredit = currentCredit - finalAmount;
         System.out.println("--------------------------");
 
-        System.out.println("Confirm payment?");
+        System.out.println("\nConfirm payment?");
         System.out.println("[1] Confirm");
         System.out.println("[0] Cancel");
 
