@@ -20,9 +20,10 @@ public class Main {
             System.out.println("========================================");
             System.out.println("[1] Register");
             System.out.println("[2] Login");
+            System.out.println("[3] Login as Admin");
             System.out.println("[0] Exit");
             
-            int choice = service.numberAuthenticator(0,2);
+            int choice = service.numberAuthenticator(0,3);
 
             switch (choice) {
                 case 1 -> service.registerPassenger();
@@ -83,6 +84,10 @@ public class Main {
                     }
                 }
             }
+                
+                case 3 -> {
+                    service.viewIncomeStatement();
+                }
                 case 0 -> {
                     System.out.println("\nTHANK YOU FOR USING OUR SYSTEM!");
                     return;
